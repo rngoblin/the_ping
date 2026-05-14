@@ -14,7 +14,7 @@ export function ReactionBar() {
   const addReaction = usePingStore((state) => state.addReaction);
 
   return (
-    <div className="flex items-center justify-between gap-3">
+    <div className="reaction-bar flex items-center justify-between gap-3">
       <div className="flex gap-2">
         {reactions.map((reaction) => {
           const Icon = reaction.icon;
@@ -24,7 +24,7 @@ export function ReactionBar() {
               whileTap={{ scale: 0.94 }}
               key={reaction.emoji}
               onClick={() => addReaction(reaction.emoji)}
-              className="group grid size-11 place-items-center rounded-full border border-ping-black/10 bg-ping-surface text-ping-ink transition hover:border-ping-accent/40 hover:bg-ping-sage/50"
+              className="group grid size-10 place-items-center rounded-full border border-ping-black/10 bg-ping-surface text-ping-ink transition hover:border-ping-accent/40 hover:bg-ping-sage/50 sm:size-11"
               aria-label={reaction.label}
               title={reaction.label}
             >
@@ -33,7 +33,7 @@ export function ReactionBar() {
           );
         })}
       </div>
-      <p className="max-w-[12rem] text-right font-mono text-[10px] uppercase leading-relaxed text-ping-ink/45">
+      <p className="max-w-[9.5rem] text-right font-mono text-[9px] uppercase leading-relaxed text-ping-ink/45 sm:max-w-[12rem] sm:text-[10px]">
         reactions ripple through the room
       </p>
     </div>

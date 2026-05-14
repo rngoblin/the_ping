@@ -8,7 +8,7 @@ export function RoomSwitcher() {
   const setActiveRoom = usePingStore((state) => state.setActiveRoom);
 
   return (
-    <div className="soft-scroll flex gap-2 overflow-x-auto pb-2 lg:hidden">
+    <div className="room-switcher soft-scroll flex gap-2 overflow-x-auto pb-2 lg:hidden">
       {rooms.map((room) => {
         const isActive = activeRoomId === room.id;
 
@@ -16,7 +16,7 @@ export function RoomSwitcher() {
           <button
             key={room.id}
             onClick={() => setActiveRoom(room.id)}
-            className={`shrink-0 rounded-full border px-4 py-2 text-sm transition ${
+            className={`shrink-0 rounded-full border px-3 py-2 text-[13px] transition sm:px-4 sm:text-sm ${
               isActive ? "border-ping-accent bg-ping-sage" : "border-ping-black/10 bg-ping-surface"
             }`}
           >

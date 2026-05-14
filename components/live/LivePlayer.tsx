@@ -19,27 +19,27 @@ export function LivePlayer() {
   const eyebrow = isLive ? "live now" : isStartingSoon ? "starting soon" : isOffline ? "signal quiet" : "next live soon";
 
   return (
-    <section className="relative overflow-hidden rounded-lg border border-ping-black/10 bg-ping-black shadow-mist">
-      <div className="venue-still relative min-h-[22rem] md:min-h-[30rem]">
+    <section className="live-player relative overflow-hidden rounded-md border border-ping-black/10 bg-ping-black shadow-mist">
+      <div className="venue-still relative min-h-[18.75rem] sm:min-h-[22rem] md:min-h-[30rem]">
         <StreamEmbed />
         <VenueAtmosphere />
-        <div className="absolute inset-0 opacity-35 mix-blend-screen" style={{ animation: "drift 10s linear infinite alternate" }}>
+        <div className="venue-glow absolute inset-0 opacity-35 mix-blend-screen" style={{ animation: "drift 10s linear infinite alternate" }}>
           <div className="h-full w-[120%] bg-[radial-gradient(circle_at_35%_50%,rgba(244,244,242,0.42),transparent_20rem)]" />
         </div>
 
         <ReactionPulses />
 
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between p-4 sm:p-5">
-          <div className="rounded-full border border-ping-bg/30 bg-ping-bg/20 px-3 py-1.5 font-mono text-[10px] uppercase text-ping-bg backdrop-blur-md">
+        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3 sm:p-5">
+          <div className="rounded-full border border-ping-bg/30 bg-ping-bg/20 px-2.5 py-1.5 font-mono text-[9px] uppercase text-ping-bg backdrop-blur-md sm:px-3 sm:text-[10px]">
             {isLive ? `${currentLive.startedAt} local signal` : `starts in ${currentLive.startsInMinutes}m`}
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-ping-bg/30 bg-ping-bg/20 px-3 py-1.5 font-mono text-[10px] uppercase text-ping-bg backdrop-blur-md">
+          <div className="flex items-center gap-2 rounded-full border border-ping-bg/30 bg-ping-bg/20 px-2.5 py-1.5 font-mono text-[9px] uppercase text-ping-bg backdrop-blur-md sm:px-3 sm:text-[10px]">
             <span className="size-2 rounded-full bg-ping-sage shadow-[0_0_14px_rgba(183,194,178,0.8)]" />
             {viewerCount.toLocaleString()} here
           </div>
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
+        <div className="absolute inset-x-0 bottom-0 p-4 sm:p-7">
           {!isLive ? (
             <div className="mb-5 flex max-w-md items-center gap-3 rounded-lg border border-ping-bg/30 bg-ping-bg/18 p-3 text-ping-bg backdrop-blur-md">
               {isOffline ? <AlertCircle size={18} /> : <PingGlyph className="size-8 bg-ping-bg/20" />}
@@ -52,7 +52,7 @@ export function LivePlayer() {
             </div>
           ) : null}
 
-          <div className="mb-5 flex h-16 items-end gap-1.5">
+          <div className="mb-4 flex h-10 items-end gap-1 sm:mb-5 sm:h-16 sm:gap-1.5">
             {Array.from({ length: 36 }).map((_, index) => (
               <span
                 key={index}
@@ -62,19 +62,19 @@ export function LivePlayer() {
             ))}
           </div>
 
-          <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between sm:gap-5">
             <div>
-              <div className="mb-3 flex items-center gap-2 font-mono text-[10px] uppercase text-ping-bg/80">
-                <Radio size={14} />
+              <div className="mb-2 flex items-center gap-2 font-mono text-[9px] uppercase text-ping-bg/80 sm:mb-3 sm:text-[10px]">
+                <Radio size={13} />
                 {eyebrow}
               </div>
-              <h1 className="max-w-2xl text-[2.55rem] font-semibold leading-[0.95] text-ping-bg sm:text-6xl">
+              <h1 className="max-w-2xl text-[2rem] font-semibold leading-[0.96] text-ping-bg sm:text-[2.55rem] md:text-6xl">
                 {isLive ? currentLive.title : isStartingSoon ? currentLive.nextTitle : "Next live soon"}
               </h1>
-              <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-ping-bg/80">
+              <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1.5 text-[12px] text-ping-bg/80 sm:mt-4 sm:gap-x-4 sm:text-sm">
                 <span>{isLive ? currentLive.artist : currentLive.nextArtist}</span>
                 <span className="flex items-center gap-1.5">
-                  <MapPin size={15} />
+                  <MapPin size={14} />
                   {currentLive.city} / {currentLive.source}
                 </span>
                 <span>{currentLive.genre}</span>
@@ -86,7 +86,7 @@ export function LivePlayer() {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => addReaction("heart")}
-                className="flex h-12 items-center justify-center gap-2 rounded-full border border-ping-bg/35 bg-ping-bg/20 px-5 text-sm font-medium text-ping-bg backdrop-blur-md transition hover:bg-ping-bg/30"
+                className="flex h-10 items-center justify-center gap-2 rounded-full border border-ping-bg/35 bg-ping-bg/20 px-4 text-sm font-medium text-ping-bg backdrop-blur-md transition hover:bg-ping-bg/30 sm:h-12 sm:px-5"
               >
                 <Heart size={17} />
                 send pulse

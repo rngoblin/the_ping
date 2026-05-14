@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import type { CSSProperties } from "react";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessage } from "@/components/chat/ChatMessage";
 import { usePingStore } from "@/store/usePingStore";
@@ -17,8 +18,8 @@ export function ChatPanel() {
       initial={{ opacity: 0.88 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.22 }}
-      className="flex min-h-[24rem] max-h-[68dvh] flex-col overflow-hidden rounded-lg border border-ping-black/10 bg-ping-surface/80 shadow-line lg:min-h-[28rem] lg:max-h-none"
-      style={{ background: activeRoom ? `linear-gradient(160deg, ${activeRoom.tint}, rgba(233,233,230,0.88) 40%)` : undefined }}
+      className="chat-panel flex min-h-[21rem] max-h-[58dvh] flex-col overflow-hidden rounded-lg border border-ping-black/10 bg-ping-surface/80 shadow-line sm:min-h-[24rem] sm:max-h-[68dvh] lg:min-h-[28rem] lg:max-h-none"
+      style={activeRoom ? ({ "--active-room-tint": activeRoom.tint } as CSSProperties) : undefined}
     >
       <div className="flex items-start justify-between gap-3 border-b border-ping-black/10 px-4 py-3">
         <div>

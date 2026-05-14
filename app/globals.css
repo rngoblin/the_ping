@@ -27,20 +27,20 @@
   --color-surface: 17 23 21;
   --color-muted: 23 31 28;
   --color-sage: 29 38 34;
-  --color-accent: 143 203 115;
+  --color-accent: 168 255 96;
   --color-ink: 230 236 232;
   --color-black: 230 236 232;
-  --body-wash-a: rgba(94, 122, 100, 0.18);
-  --body-wash-b: rgba(127, 162, 135, 0.12);
+  --body-wash-a: rgba(94, 122, 100, 0.08);
+  --body-wash-b: rgba(127, 162, 135, 0.055);
   --body-base: #090d0b;
   --selection: rgba(168, 255, 96, 0.24);
-  --noise-a: rgba(230, 236, 232, 0.03);
-  --noise-b: rgba(230, 236, 232, 0.022);
+  --noise-a: rgba(230, 236, 232, 0.024);
+  --noise-b: rgba(168, 255, 96, 0.014);
   --scroll-thumb: rgba(127, 162, 135, 0.34);
   --dark-border: #2a3631;
   --dark-text-secondary: #a3b0a7;
   --dark-soft-phosphor: #7fa287;
-  --dark-signal: #8fcb73;
+  --dark-signal: #a8ff60;
   --dark-glow: #5e7a64;
   --dark-danger: #d96b6b;
   color-scheme: dark;
@@ -51,7 +51,7 @@
 }
 
 :root[data-theme="night"] .border-ping-accent\/30 {
-  border-color: rgba(143, 203, 115, 0.3);
+  border-color: rgba(168, 255, 96, 0.34);
 }
 
 :root[data-theme="night"] .text-ping-ink\/55,
@@ -65,30 +65,63 @@
 :root[data-theme="night"] .bg-ping-surface\/80,
 :root[data-theme="night"] .bg-ping-surface\/75,
 :root[data-theme="night"] .bg-ping-surface\/65 {
-  background-color: rgba(23, 31, 28, 0.86);
+  background-color: rgba(17, 23, 21, 0.9);
 }
 
 :root[data-theme="night"] .bg-ping-bg\/80,
 :root[data-theme="night"] .bg-ping-bg\/72,
 :root[data-theme="night"] .bg-ping-bg\/82,
 :root[data-theme="night"] .bg-ping-bg\/90 {
-  background-color: rgba(9, 13, 11, 0.9);
+  background-color: rgba(9, 13, 11, 0.94);
 }
 
 :root[data-theme="night"] .bg-ping-bg\/55,
 :root[data-theme="night"] .bg-ping-bg\/45 {
-  background-color: rgba(29, 38, 34, 0.72);
+  background-color: rgba(17, 23, 21, 0.86);
 }
 
 :root[data-theme="night"] .bg-ping-sage,
 :root[data-theme="night"] .bg-ping-sage\/70,
 :root[data-theme="night"] .bg-ping-sage\/45,
 :root[data-theme="night"] .bg-ping-sage\/35 {
-  background-color: rgba(94, 122, 100, 0.45);
+  background-color: rgba(94, 122, 100, 0.56);
 }
 
 :root[data-theme="night"] .ping-glyph {
   color: #ffffff;
+}
+
+:root[data-theme="night"] .ping-app {
+  background:
+    radial-gradient(circle at 48% -8%, rgba(94, 122, 100, 0.1), transparent 36rem),
+    linear-gradient(180deg, #090d0b 0%, #050706 58%, #090d0b 100%);
+}
+
+:root[data-theme="night"] .shadow-mist {
+  box-shadow: 0 18px 58px rgba(0, 0, 0, 0.34);
+}
+
+:root[data-theme="night"] .shadow-line {
+  box-shadow: 0 0 0 1px rgba(42, 54, 49, 0.78);
+}
+
+:root[data-theme="night"] .rounded-lg,
+:root[data-theme="night"] .rounded-xl {
+  border-radius: 0.45rem;
+}
+
+:root[data-theme="night"] .text-ping-accent {
+  color: var(--dark-signal);
+}
+
+:root[data-theme="night"] .bg-ping-accent,
+:root[data-theme="night"] .bg-ping-accent\/90 {
+  background-color: var(--dark-signal);
+  color: #090d0b;
+}
+
+:root[data-theme="night"] .accent-ping-sage {
+  accent-color: var(--dark-signal);
 }
 
 * {
@@ -111,6 +144,13 @@ body {
   color: rgb(var(--color-ink));
   font-family: var(--font-sans);
   letter-spacing: 0;
+}
+
+:root[data-theme="night"] body {
+  background:
+    radial-gradient(circle at 50% -10%, rgba(127, 162, 135, 0.09), transparent 34rem),
+    radial-gradient(circle at 16% 12%, rgba(94, 122, 100, 0.055), transparent 24rem),
+    #090d0b;
 }
 
 button,
@@ -137,6 +177,16 @@ button {
     linear-gradient(90deg, var(--noise-b) 1px, transparent 1px);
   background-size: 34px 34px, 34px 34px;
   mix-blend-mode: multiply;
+}
+
+:root[data-theme="night"] .noise {
+  opacity: 0.34;
+  background-image:
+    linear-gradient(rgba(230, 236, 232, 0.014) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(168, 255, 96, 0.01) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(168, 255, 96, 0.026), transparent 1px);
+  background-size: 36px 36px, 36px 36px, 7px 7px;
+  mix-blend-mode: screen;
 }
 
 .soft-scroll {
@@ -204,12 +254,32 @@ button {
   background-position: center;
 }
 
+:root[data-theme="night"] .venue-still {
+  background:
+    linear-gradient(180deg, rgba(230, 236, 232, 0.015), rgba(5, 7, 6, 0.9)),
+    radial-gradient(circle at 52% 10%, rgba(230, 236, 232, 0.15), transparent 7.5rem),
+    radial-gradient(circle at 34% 18%, rgba(127, 162, 135, 0.12), transparent 13rem),
+    linear-gradient(115deg, rgba(5, 7, 6, 0.56), transparent 44%),
+    #060907;
+}
+
+:root[data-theme="night"] .venue-glow {
+  opacity: 0.16;
+}
+
 .venue-atmosphere {
   overflow: hidden;
   background:
     radial-gradient(circle at 44% 28%, rgba(244, 244, 242, 0.16), transparent 12rem),
     radial-gradient(circle at 72% 70%, var(--room-tint, rgba(94, 122, 100, 0.2)), transparent 22rem),
     linear-gradient(180deg, rgba(244, 244, 242, 0.06), transparent 38%);
+}
+
+:root[data-theme="night"] .venue-atmosphere {
+  background:
+    radial-gradient(circle at 48% 24%, rgba(230, 236, 232, 0.07), transparent 10rem),
+    radial-gradient(circle at 72% 70%, rgba(94, 122, 100, 0.1), transparent 22rem),
+    linear-gradient(180deg, rgba(168, 255, 96, 0.018), transparent 42%);
 }
 
 .venue-haze {
@@ -223,6 +293,13 @@ button {
   animation: drift 14s ease-in-out infinite alternate;
 }
 
+:root[data-theme="night"] .venue-haze {
+  opacity: 0.28;
+  background:
+    repeating-linear-gradient(105deg, transparent 0 38px, rgba(230, 236, 232, 0.018) 40px 41px),
+    radial-gradient(ellipse at 50% 40%, rgba(230, 236, 232, 0.09), transparent 31rem);
+}
+
 .venue-lines {
   position: absolute;
   inset: 0;
@@ -231,6 +308,13 @@ button {
     linear-gradient(rgba(244, 244, 242, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(244, 244, 242, 0.06) 1px, transparent 1px);
   background-size: 48px 48px;
+}
+
+:root[data-theme="night"] .venue-lines {
+  opacity: 0.12;
+  background-image:
+    linear-gradient(rgba(230, 236, 232, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(230, 236, 232, 0.026) 1px, transparent 1px);
 }
 
 .venue-silhouettes {
@@ -252,6 +336,92 @@ button {
     var(--room-tint, rgba(94, 122, 100, 0.18));
   filter: blur(0.4px);
   transform: translateY(calc((var(--i) % 3) * 10px));
+}
+
+:root[data-theme="night"] .venue-silhouettes {
+  opacity: 0.88;
+}
+
+:root[data-theme="night"] .venue-silhouettes span {
+  background:
+    linear-gradient(180deg, rgba(230, 236, 232, 0.035), rgba(2, 3, 3, 0.96)),
+    rgba(94, 122, 100, 0.12);
+}
+
+.room-vibe-panel {
+  background: linear-gradient(145deg, var(--active-room-tint, rgba(94, 122, 100, 0.18)), rgba(233, 233, 230, 0.82) 44%);
+}
+
+.chat-panel {
+  background: linear-gradient(160deg, var(--active-room-tint, rgba(94, 122, 100, 0.18)), rgba(233, 233, 230, 0.88) 40%);
+}
+
+:root[data-theme="night"] .room-vibe-panel {
+  background:
+    radial-gradient(circle at 82% 24%, rgba(168, 255, 96, 0.075), transparent 5.5rem),
+    linear-gradient(145deg, rgba(17, 23, 21, 0.96), rgba(9, 13, 11, 0.96) 62%);
+}
+
+:root[data-theme="night"] .room-vibe-orb {
+  background-color: var(--dark-signal) !important;
+  color: var(--dark-signal) !important;
+  opacity: 0.46 !important;
+}
+
+:root[data-theme="night"] .room-vibe-meter {
+  background-color: var(--dark-soft-phosphor) !important;
+}
+
+:root[data-theme="night"] .chat-panel {
+  background:
+    radial-gradient(circle at 16% 6%, rgba(94, 122, 100, 0.105), transparent 15rem),
+    linear-gradient(160deg, rgba(17, 23, 21, 0.94), rgba(9, 13, 11, 0.96) 48%);
+}
+
+:root[data-theme="night"] .live-player {
+  border-color: rgba(42, 54, 49, 0.92);
+  background: #050706;
+}
+
+:root[data-theme="night"] .live-player .text-ping-bg,
+:root[data-theme="night"] .live-player .text-ping-bg\/80,
+:root[data-theme="night"] .live-player .text-ping-bg\/75,
+:root[data-theme="night"] .live-player .text-ping-bg\/65 {
+  color: #e6ece8;
+}
+
+:root[data-theme="night"] .live-player .bg-ping-bg\/35,
+:root[data-theme="night"] .live-player .bg-ping-bg\/30,
+:root[data-theme="night"] .live-player .bg-ping-bg\/20,
+:root[data-theme="night"] .live-player .bg-ping-bg\/18,
+:root[data-theme="night"] .live-player .bg-ping-bg\/16,
+:root[data-theme="night"] .live-player .bg-ping-bg\/10 {
+  background-color: rgba(230, 236, 232, 0.08);
+}
+
+:root[data-theme="night"] .player-controls,
+:root[data-theme="night"] .live-player [class*="border-ping-bg"] {
+  border-color: rgba(230, 236, 232, 0.18);
+}
+
+:root[data-theme="night"] .signal-bar {
+  background-color: rgba(168, 255, 96, 0.72);
+  box-shadow: 0 0 12px rgba(168, 255, 96, 0.18);
+}
+
+:root[data-theme="night"] .reaction-bar button:hover {
+  border-color: rgba(168, 255, 96, 0.42);
+}
+
+:root[data-theme="night"] .room-switcher button {
+  border-color: rgba(42, 54, 49, 0.86);
+  background: rgba(17, 23, 21, 0.92);
+}
+
+:root[data-theme="night"] .room-switcher button[class*="border-ping-accent"] {
+  border-color: rgba(168, 255, 96, 0.54);
+  background: rgba(94, 122, 100, 0.58);
+  color: #e6ece8;
 }
 
 @media (max-width: 640px) {
