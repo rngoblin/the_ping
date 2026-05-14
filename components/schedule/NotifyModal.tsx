@@ -73,7 +73,7 @@ export function NotifyModal({ act, onClose }: NotifyModalProps) {
             {isSaved ? (
               <div className="rounded-lg border border-ping-accent/25 bg-ping-sage/35 p-4">
                 <p className="text-sm font-medium">saved for the next transmission</p>
-                <p className="mt-2 text-sm leading-relaxed text-ping-ink/55">No messages will be sent yet. This stays local for the test.</p>
+                <p className="mt-2 text-sm leading-relaxed text-ping-ink/55">No messages will be sent yet. The signal is saved for the test.</p>
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-3">

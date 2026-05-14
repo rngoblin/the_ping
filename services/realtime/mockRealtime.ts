@@ -3,12 +3,12 @@ import { rooms } from "@/data/rooms";
 import type {
   PresenceCallback,
   ReactionCallback,
+  ReactionInput,
   RealtimeAdapter,
   RoomMessageCallback,
   RoomMessageInput
 } from "@/services/realtime/types";
 import type { ChatMessage } from "@/data/messages";
-import type { ReactionPulse } from "@/store/usePingStore";
 
 const messageListeners = new Map<string, Set<RoomMessageCallback>>();
 const presenceListeners = new Map<string, Set<PresenceCallback>>();
@@ -42,9 +42,9 @@ export const mockRealtime: RealtimeAdapter = {
     const newMessage: ChatMessage = {
       id: createId(),
       roomId,
-      username: input.username,
+      username: input.nickname,
       avatar: input.avatar,
-      message: input.message,
+      message: input.body,
       timestamp: "now"
     };
 
@@ -53,22 +53,25 @@ export const mockRealtime: RealtimeAdapter = {
 
     return newMessage;
   },
-  subscribeToPresence: (roomId, callback) => {
+  subscribeToPresence: (roomId, callback, user) => {
     const listeners = presenceListeners.get(roomId) ?? new Set<PresenceCallback>();
     const room = rooms.find((item) => item.id === roomId);
+    const fallbackAvatars = ["SA", "NK", "ME", "LO", "VE", "JU", "AN"];
+    const avatars = user ? [user.avatar, ...fallbackAvatars.filter((avatar) => avatar !== user.avatar)].slice(0, 7) : fallbackAvatars;
     listeners.add(callback);
     presenceListeners.set(roomId, listeners);
     callback({
       roomId,
       count: room?.count ?? 0,
-      avatars: ["SA", "NK", "ME", "LO", "VE", "JU", "AN"]
+      avatars,
+      users: user ? [user] : undefined
     });
 
     return () => {
       listeners.delete(callback);
     };
   },
-  sendReaction: async (reaction: ReactionPulse) => {
+  sendReaction: async (reaction: ReactionInput) => {
     reactionListeners.forEach((callback) => callback(reaction));
     return reaction;
   },
@@ -78,5 +81,8 @@ export const mockRealtime: RealtimeAdapter = {
     return () => {
       reactionListeners.delete(callback);
     };
+  },
+  captureNotifyLead: async () => {
+    return;
   }
 };

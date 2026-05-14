@@ -3,6 +3,7 @@
 import { Copy, Trash2, X } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 import type { LiveStatus } from "@/data/currentLive";
+import { getRealtimeProviderName } from "@/services/realtime";
 
 export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const events = usePingStore((state) => state.events);
@@ -23,6 +24,7 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
 
   const testState = {
     activeEventId,
+    realtimeProvider: getRealtimeProviderName(),
     liveStatus: currentLive.status,
     streamType: currentLive.streamType,
     activeRoomId,
@@ -78,6 +80,11 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
               </button>
             ))}
           </div>
+        </section>
+
+        <section className="rounded-lg border border-ping-bg/10 p-3">
+          <p className="mb-2 font-mono text-[10px] uppercase text-ping-bg/45">realtime</p>
+          <p className="font-mono text-xs uppercase text-ping-bg/70">{getRealtimeProviderName()}</p>
         </section>
 
         <section className="rounded-lg border border-ping-bg/10 p-3">

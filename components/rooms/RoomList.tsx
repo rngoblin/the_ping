@@ -5,6 +5,7 @@ import { usePingStore } from "@/store/usePingStore";
 export function RoomList() {
   const rooms = usePingStore((state) => state.rooms);
   const activeRoomId = usePingStore((state) => state.activeRoomId);
+  const presenceByRoom = usePingStore((state) => state.presenceByRoom);
   const setActiveRoom = usePingStore((state) => state.setActiveRoom);
 
   return (
@@ -16,6 +17,7 @@ export function RoomList() {
       <div className="grid gap-1.5">
         {rooms.map((room) => {
           const isActive = activeRoomId === room.id;
+          const presenceCount = presenceByRoom[room.id]?.count;
 
           return (
             <button
@@ -32,7 +34,7 @@ export function RoomList() {
                   <span className="size-2 rounded-full" style={{ backgroundColor: room.accent }} />
                   {room.name}
                 </span>
-                <span className="font-mono text-[10px] text-ping-ink/45">{room.count}</span>
+                <span className="font-mono text-[10px] text-ping-ink/45">{presenceCount ?? room.count}</span>
               </div>
               <p className="mt-1 truncate text-xs text-ping-ink/50">{room.description}</p>
               <p className="mt-2 font-mono text-[10px] uppercase text-ping-ink/35">{room.tagline}</p>

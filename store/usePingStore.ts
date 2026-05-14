@@ -6,14 +6,17 @@ import { messagesByRoom as initialMessages, type ChatMessage } from "@/data/mess
 import { rooms } from "@/data/rooms";
 import type { ScheduleAct } from "@/data/schedule";
 import { eventConfig, type PingEvent } from "@/data/eventConfig";
+import { getRealtimeAdapter } from "@/services/realtime";
 import { mockRealtime } from "@/services/realtime/mockRealtime";
-import type { PresenceState } from "@/services/realtime/types";
+import type { PresenceState, PresenceUser, ReactionInput } from "@/services/realtime/types";
 
 export type ReactionPulse = {
   id: string;
   emoji: string;
   x: number;
   color: string;
+  roomId?: string;
+  userId?: string;
 };
 
 export type MobilePanel = "none" | "rooms" | "schedule" | "vibe";
@@ -60,6 +63,9 @@ type PingStore = {
   setActiveRoom: (roomId: string) => void;
   setActiveEvent: (eventId: string) => void;
   setLiveStatus: (status: LiveStatus) => void;
+  setRoomMessages: (roomId: string, messages: ChatMessage[]) => void;
+  setRoomPresence: (roomId: string, presence: PresenceState) => void;
+  receiveReaction: (reaction: ReactionInput) => void;
   sendMessage: (message: string) => void;
   addReaction: (emoji: string) => void;
   removeReaction: (id: string) => void;
@@ -121,6 +127,27 @@ const applyThemeMode = (themeMode: ThemeMode) => {
 
   document.documentElement.dataset.theme = themeMode === "night" ? "night" : "daylight";
 };
+
+const dedupeMessages = (messages: ChatMessage[]) => {
+  const seen = new Set<string>();
+
+  return messages.filter((message) => {
+    if (seen.has(message.id)) {
+      return false;
+    }
+
+    seen.add(message.id);
+    return true;
+  });
+};
+
+export const createPresenceUser = (session: LocalUserSession, roomId: string): PresenceUser => ({
+  userId: session.userId,
+  nickname: session.nickname,
+  avatar: session.avatarSeed,
+  roomId,
+  joinedAt: new Date().toISOString()
+});
 
 export const usePingStore = create<PingStore>((set, get) => ({
   hasHydratedSession: false,
@@ -195,15 +222,6 @@ export const usePingStore = create<PingStore>((set, get) => ({
         }
       }
     }));
-
-    mockRealtime.subscribeToPresence(roomId, (presence) => {
-      set((state) => ({
-        presenceByRoom: {
-          ...state.presenceByRoom,
-          [roomId]: presence
-        }
-      }));
-    })();
   },
   setActiveEvent: (eventId) => {
     const event = get().events.find((item) => item.id === eventId);
@@ -231,6 +249,30 @@ export const usePingStore = create<PingStore>((set, get) => ({
         status
       }
     })),
+  setRoomMessages: (roomId, messages) =>
+    set((state) => ({
+      messagesByRoom: {
+        ...state.messagesByRoom,
+        [roomId]: dedupeMessages(messages).slice(-50)
+      }
+    })),
+  setRoomPresence: (roomId, presence) =>
+    set((state) => ({
+      presenceByRoom: {
+        ...state.presenceByRoom,
+        [roomId]: presence
+      }
+    })),
+  receiveReaction: (reaction) => {
+    if (reaction.roomId !== get().activeRoomId || reaction.userId === get().localUser?.userId) {
+      return;
+    }
+
+    set((state) => ({
+      reactions: [...state.reactions, reaction],
+      viewerCount: state.viewerCount + 1
+    }));
+  },
   sendMessage: (message) => {
     const cleanMessage = message.trim();
 
@@ -239,30 +281,35 @@ export const usePingStore = create<PingStore>((set, get) => ({
     }
 
     const { activeRoomId, localUser } = get();
-
-    void mockRealtime.sendRoomMessage(activeRoomId, {
-      username: localUser?.nickname ?? "you",
+    const input = {
+      userId: localUser?.userId ?? "local-only",
+      nickname: localUser?.nickname ?? "you",
       avatar: localUser?.avatarSeed ?? "YO",
-      message: cleanMessage
-    }).then((newMessage) => {
+      body: cleanMessage
+    };
+
+    void getRealtimeAdapter().sendRoomMessage(activeRoomId, input).catch(() => mockRealtime.sendRoomMessage(activeRoomId, input)).then((newMessage) => {
       set((state) => ({
         messagesByRoom: {
           ...state.messagesByRoom,
-          [activeRoomId]: [...(state.messagesByRoom[activeRoomId] ?? []), newMessage]
+          [activeRoomId]: dedupeMessages([...(state.messagesByRoom[activeRoomId] ?? []), newMessage]).slice(-50)
         }
       }));
     });
   },
   addReaction: (emoji) => {
-    const room = get().rooms.find((item) => item.id === get().activeRoomId) ?? get().rooms[0];
+    const { activeRoomId, localUser } = get();
+    const room = get().rooms.find((item) => item.id === activeRoomId) ?? get().rooms[0];
     const pulse = {
       id: createId(),
       emoji,
+      roomId: activeRoomId,
+      userId: localUser?.userId ?? "local-only",
       x: 16 + Math.random() * 68,
       color: room.accent
     };
 
-    void mockRealtime.sendReaction(pulse);
+    void getRealtimeAdapter().sendReaction(pulse).catch(() => mockRealtime.sendReaction(pulse));
 
     set((state) => ({
       reactions: [...state.reactions, pulse],
@@ -279,6 +326,12 @@ export const usePingStore = create<PingStore>((set, get) => ({
       id: createId(),
       createdAt: new Date().toISOString()
     };
+
+    void getRealtimeAdapter().captureNotifyLead({
+      contact: lead.contact,
+      eventId: get().activeEventId,
+      source: `schedule:${lead.actId}`
+    }).catch(() => undefined);
 
     set((state) => {
       const notifyLeads = [...state.notifyLeads, newLead];

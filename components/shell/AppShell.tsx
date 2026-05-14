@@ -19,6 +19,8 @@ import { usePingStore } from "@/store/usePingStore";
 import { EntryGate } from "@/components/shell/EntryGate";
 import { LoadingState } from "@/components/shell/LoadingState";
 import { DebugPanel } from "@/components/shell/DebugPanel";
+import { getRealtimeAdapter } from "@/services/realtime";
+import { createPresenceUser } from "@/store/usePingStore";
 
 export function AppShell() {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -29,11 +31,16 @@ export function AppShell() {
   const themeMode = usePingStore((state) => state.themeMode);
   const hydrateLocalSession = usePingStore((state) => state.hydrateLocalSession);
   const hydrateTheme = usePingStore((state) => state.hydrateTheme);
+  const setRoomMessages = usePingStore((state) => state.setRoomMessages);
+  const setRoomPresence = usePingStore((state) => state.setRoomPresence);
+  const receiveReaction = usePingStore((state) => state.receiveReaction);
   const rooms = usePingStore((state) => state.rooms);
   const activeRoomId = usePingStore((state) => state.activeRoomId);
+  const presenceByRoom = usePingStore((state) => state.presenceByRoom);
   const mobilePanel = usePingStore((state) => state.mobilePanel);
   const setMobilePanel = usePingStore((state) => state.setMobilePanel);
   const activeRoom = rooms.find((room) => room.id === activeRoomId) ?? rooms[0];
+  const activePresence = presenceByRoom[activeRoomId];
   const openFullSchedule = () => {
     setMobilePanel("none");
     setIsScheduleOpen(true);
@@ -43,6 +50,30 @@ export function AppShell() {
     hydrateLocalSession();
     hydrateTheme();
   }, [hydrateLocalSession, hydrateTheme]);
+
+  useEffect(() => {
+    const adapter = getRealtimeAdapter();
+    const unsubscribeMessages = adapter.subscribeToRoomMessages(activeRoomId, (messages) => {
+      setRoomMessages(activeRoomId, messages);
+    });
+    const unsubscribePresence = adapter.subscribeToPresence(
+      activeRoomId,
+      (presence) => {
+        setRoomPresence(activeRoomId, presence);
+      },
+      localUser ? createPresenceUser(localUser, activeRoomId) : undefined
+    );
+
+    return () => {
+      unsubscribeMessages();
+      unsubscribePresence();
+    };
+  }, [activeRoomId, localUser, setRoomMessages, setRoomPresence]);
+
+  useEffect(() => {
+    const unsubscribeReactions = getRealtimeAdapter().subscribeToReactions(receiveReaction);
+    return unsubscribeReactions;
+  }, [receiveReaction]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -114,7 +145,7 @@ export function AppShell() {
               <section className="rounded-lg border border-ping-black/10 bg-ping-surface/80 p-4 shadow-line">
                 <h2 className="mb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/50">people here</h2>
                 <div className="flex -space-x-2">
-                  {["SA", "NK", "ME", "LO", "VE", "JU", "AN"].map((avatar) => (
+                  {(activePresence?.avatars.length ? activePresence.avatars : ["SA", "NK", "ME", "LO", "VE", "JU", "AN"]).map((avatar) => (
                     <div
                       key={avatar}
                       className="grid size-9 place-items-center rounded-full border-2 border-ping-surface bg-ping-muted font-mono text-[10px] text-ping-ink/60"
@@ -124,7 +155,7 @@ export function AppShell() {
                   ))}
                 </div>
                 <p className="mt-4 text-sm leading-relaxed text-ping-ink/55">
-                  Presence is intentionally quiet: enough to feel the room, never enough to break the spell.
+                  {activePresence?.count ? `${activePresence.count.toLocaleString()} inside this room right now.` : "Presence is intentionally quiet: enough to feel the room, never enough to break the spell."}
                 </p>
               </section>
             </aside>

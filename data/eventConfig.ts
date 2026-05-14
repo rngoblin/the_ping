@@ -1,8 +1,10 @@
 import { currentLive } from "@/data/currentLive";
+import { liveTestConfig } from "@/data/liveTestConfig";
 import { rooms } from "@/data/rooms";
 import { schedule } from "@/data/schedule";
 
 export type ThemeVariant = "daylight-afterhours";
+export type RealtimeProvider = "mock" | "supabase";
 
 export type FeatureFlags = {
   enableEntryGate: boolean;
@@ -39,9 +41,19 @@ export const testEvents: PingEvent[] = [
     subtitle: "one shared stream from a quiet room after sunrise",
     dateLabel: "test night / this week",
     themeVariant: "daylight-afterhours",
-    currentLive,
+    currentLive: {
+      ...currentLive,
+      status: liveTestConfig.status,
+      streamType: liveTestConfig.streamType,
+      streamUrl: liveTestConfig.streamUrl,
+      embedUrl: liveTestConfig.embedUrl,
+      title: liveTestConfig.title,
+      artist: liveTestConfig.artist,
+      city: liveTestConfig.city,
+      source: liveTestConfig.source
+    },
     enabledRoomIds: rooms.map((room) => room.id),
-    schedule,
+    schedule: liveTestConfig.schedule,
     featureFlags
   },
   {
@@ -73,9 +85,10 @@ export const testEvents: PingEvent[] = [
 
 export const eventConfig = {
   currentEventId: "field-notes-after-dawn",
+  realtimeProvider: "supabase" as RealtimeProvider,
   events: testEvents,
   supabase: {
-    // Supabase realtime will attach here later. Keep mockRealtime as the default provider for V0.3.
+    // Browser realtime only. If these are missing, PING falls back to mockRealtime.
     url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
     anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
   }
