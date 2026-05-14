@@ -90,6 +90,6 @@ export const eventConfig = {
   supabase: {
     // Browser realtime only. If these are missing, PING falls back to mockRealtime.
     url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-    anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? ""
+    publishableKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? ""
   }
 };

@@ -28,10 +28,10 @@ Create `.env.local`:
 
 ```bash
 NEXT_PUBLIC_SUPABASE_URL=...
-NEXT_PUBLIC_SUPABASE_ANON_KEY=...
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 ```
 
-Use a browser-safe Supabase Publishable key (`sb_publishable_...`) or legacy anon public key. Anything prefixed `NEXT_PUBLIC_` is bundled into the browser. Do not put private secret/service-role keys in this frontend.
+Use a browser-safe Supabase Publishable key (`sb_publishable_...`). Anything prefixed `NEXT_PUBLIC_` is bundled into the browser. Do not put private secret/service-role keys in this frontend.
 
 ## 3. Run Locally
 
@@ -69,7 +69,7 @@ In GitHub repo settings:
 1. Settings > Secrets and variables > Actions.
 2. Add repository secrets:
    - `NEXT_PUBLIC_SUPABASE_URL`
-   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
 3. Push to `master`.
 4. Watch Actions > Deploy PING to GitHub Pages.
 5. Open `https://rngoblin.github.io/the_ping/`.

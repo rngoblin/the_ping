@@ -20,12 +20,13 @@ Current supported environment values:
 
 ```text
 NEXT_PUBLIC_SUPABASE_URL=
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 ```
 
 Important:
 
 - `NEXT_PUBLIC_*` values are visible in the browser.
-- Do not place private API keys in this app while it is hosted as static GitHub Pages.
+- Use a browser-safe Supabase Publishable key (`sb_publishable_...`).
+- Do not place private/secret API keys in this app while it is hosted as static GitHub Pages.
 - If PING later needs private APIs, add a backend/API route or serverless proxy and keep private keys there.
-- The current app still uses `mockRealtime` by default.
+- If Supabase env vars are missing, PING falls back to `mockRealtime`.
