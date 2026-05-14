@@ -13,6 +13,8 @@ Goal: 5-20 invited people can enter with a nickname, share one stream, chat in r
    - `notify_leads`
 5. In Database > Replication, confirm Realtime is enabled for `messages` and `reactions`.
 
+The setup SQL is intentionally non-destructive: it creates missing tables, indexes, RLS policies, and realtime publication entries. It should not delete existing rows.
+
 RLS is intentionally permissive for a closed night test:
 - anon can select and insert messages
 - anon can select and insert reactions
@@ -29,7 +31,7 @@ NEXT_PUBLIC_SUPABASE_URL=...
 NEXT_PUBLIC_SUPABASE_ANON_KEY=...
 ```
 
-Anything prefixed `NEXT_PUBLIC_` is bundled into the browser. Do not put private service-role keys in this frontend.
+Use a browser-safe Supabase Publishable key (`sb_publishable_...`) or legacy anon public key. Anything prefixed `NEXT_PUBLIC_` is bundled into the browser. Do not put private secret/service-role keys in this frontend.
 
 ## 3. Run Locally
 
