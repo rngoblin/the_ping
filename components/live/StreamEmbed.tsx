@@ -17,8 +17,9 @@ export function StreamEmbed() {
         key={`${currentLive.streamType}:${currentLive.embedUrl}`}
         src={currentLive.embedUrl}
         title={`${currentLive.title} stream`}
-        allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
         allowFullScreen
+        referrerPolicy="strict-origin-when-cross-origin"
         className="absolute inset-0 z-0 h-full w-full border-0 opacity-80"
       />
     );
@@ -32,6 +33,7 @@ export function StreamEmbed() {
         className="absolute inset-0 z-0 h-full w-full object-cover opacity-80"
         autoPlay
         muted
+        loop
         playsInline
         controls={false}
       />

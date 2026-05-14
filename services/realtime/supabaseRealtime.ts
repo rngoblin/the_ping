@@ -31,6 +31,16 @@ type ReactionRow = {
 
 const messageColumns = "id, room_id, user_id, nickname, body, created_at";
 const reactionColors = ["#A8FF60", "#8FCB73", "#7FA287", "#5E7A64"];
+const messageChannels = new Map<string, ReturnType<NonNullable<ReturnType<typeof getSupabaseClient>>["channel"]>>();
+let reactionChannel: ReturnType<NonNullable<ReturnType<typeof getSupabaseClient>>["channel"]> | null = null;
+
+const createId = () => {
+  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
+    return crypto.randomUUID();
+  }
+
+  return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+};
 
 const initials = (nickname: string) => {
   const clean = nickname.trim().slice(0, 2).toUpperCase();
@@ -71,6 +81,54 @@ const toReaction = (row: ReactionRow): ReactionInput => ({
   x: 16 + Math.random() * 68,
   color: reactionColors[Math.abs(row.id.charCodeAt(0) + row.reaction.length) % reactionColors.length]
 });
+
+const createBroadcastMessage = (roomId: string, input: RoomMessageInput): ChatMessage => ({
+  id: `broadcast-${createId()}`,
+  roomId,
+  username: input.nickname,
+  avatar: input.avatar,
+  message: input.body,
+  timestamp: "now"
+});
+
+const waitForSubscribed = (channel: ReturnType<NonNullable<ReturnType<typeof getSupabaseClient>>["channel"]>) => {
+  return new Promise<void>((resolve) => {
+    const timeout = window.setTimeout(resolve, 900);
+
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED") {
+        window.clearTimeout(timeout);
+        resolve();
+      }
+    });
+  });
+};
+
+const getOrCreateMessageChannel = async (roomId: string) => {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const activeChannel = messageChannels.get(roomId);
+
+  if (activeChannel) {
+    return activeChannel;
+  }
+
+  const channel = supabase.channel(`messages:${roomId}`, {
+    config: {
+      broadcast: {
+        self: false
+      }
+    }
+  });
+  messageChannels.set(roomId, channel);
+  await waitForSubscribed(channel);
+
+  return channel;
+};
 
 const uniqMessages = (messages: ChatMessage[]) => {
   const seen = new Set<string>();
@@ -125,7 +183,17 @@ export const supabaseRealtime: RealtimeAdapter = {
       });
 
     const channel = supabase
-      .channel(`messages:${roomId}`)
+      .channel(`messages:${roomId}`, {
+        config: {
+          broadcast: {
+            self: false
+          }
+        }
+      })
+      .on("broadcast", { event: "message" }, (payload) => {
+        messages = uniqMessages([...messages, payload.payload as ChatMessage]).slice(-50);
+        emit();
+      })
       .on(
         "postgres_changes",
         {
@@ -140,9 +208,11 @@ export const supabaseRealtime: RealtimeAdapter = {
         }
       )
       .subscribe();
+    messageChannels.set(roomId, channel);
 
     return () => {
       isActive = false;
+      messageChannels.delete(roomId);
       void supabase.removeChannel(channel);
     };
   },
@@ -166,7 +236,15 @@ export const supabaseRealtime: RealtimeAdapter = {
       .single();
 
     if (error || !data) {
-      throw new Error(error?.message ?? "Message insert failed");
+      const broadcastMessage = createBroadcastMessage(roomId, input);
+      const channel = await getOrCreateMessageChannel(roomId);
+      await channel?.send({
+        type: "broadcast",
+        event: "message",
+        payload: broadcastMessage
+      });
+
+      return broadcastMessage;
     }
 
     return toChatMessage(data as MessageRow);
@@ -239,7 +317,13 @@ export const supabaseRealtime: RealtimeAdapter = {
       .single();
 
     if (error || !data) {
-      throw new Error(error?.message ?? "Reaction insert failed");
+      await reactionChannel?.send({
+        type: "broadcast",
+        event: "reaction",
+        payload: reaction
+      });
+
+      return reaction;
     }
 
     return toReaction(data as ReactionRow);
@@ -253,7 +337,14 @@ export const supabaseRealtime: RealtimeAdapter = {
     }
 
     const channel = supabase
-      .channel("reactions")
+      .channel("reactions", {
+        config: {
+          broadcast: {
+            self: false
+          }
+        }
+      })
+      .on("broadcast", { event: "reaction" }, (payload) => callback(payload.payload as ReactionInput))
       .on(
         "postgres_changes",
         {
@@ -264,8 +355,10 @@ export const supabaseRealtime: RealtimeAdapter = {
         (payload) => callback(toReaction(payload.new as ReactionRow))
       )
       .subscribe();
+    reactionChannel = channel;
 
     return () => {
+      reactionChannel = null;
       void supabase.removeChannel(channel);
     };
   },

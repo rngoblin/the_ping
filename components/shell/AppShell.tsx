@@ -145,9 +145,9 @@ export function AppShell() {
               <section className="rounded-lg border border-ping-black/10 bg-ping-surface/80 p-4 shadow-line">
                 <h2 className="mb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/50">people here</h2>
                 <div className="flex -space-x-2">
-                  {(activePresence?.avatars.length ? activePresence.avatars : ["SA", "NK", "ME", "LO", "VE", "JU", "AN"]).map((avatar) => (
+                  {(activePresence?.avatars.length ? activePresence.avatars : ["SA", "NK", "ME", "LO", "VE", "JU", "AN"]).map((avatar, index) => (
                     <div
-                      key={avatar}
+                      key={`${avatar}-${index}`}
                       className="grid size-9 place-items-center rounded-full border-2 border-ping-surface bg-ping-muted font-mono text-[10px] text-ping-ink/60"
                     >
                       {avatar}
