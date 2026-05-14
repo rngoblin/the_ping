@@ -1,0 +1,210 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-sans: "Inter", "ABC Diatype", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", "Geist Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-bg: 244 244 242;
+  --color-surface: 233 233 230;
+  --color-muted: 215 218 211;
+  --color-sage: 183 194 178;
+  --color-accent: 94 122 100;
+  --color-ink: 26 26 26;
+  --color-black: 8 15 12;
+  --body-wash-a: rgba(183, 194, 178, 0.36);
+  --body-wash-b: rgba(215, 218, 211, 0.7);
+  --body-base: #f4f4f2;
+  --selection: rgba(94, 122, 100, 0.2);
+  --noise-a: rgba(8, 15, 12, 0.035);
+  --noise-b: rgba(8, 15, 12, 0.025);
+  --scroll-thumb: rgba(94, 122, 100, 0.28);
+  color-scheme: light;
+}
+
+:root[data-theme="night"] {
+  --color-bg: 10 14 12;
+  --color-surface: 18 24 20;
+  --color-muted: 33 42 36;
+  --color-sage: 101 119 101;
+  --color-accent: 154 179 151;
+  --color-ink: 235 238 232;
+  --color-black: 244 244 242;
+  --body-wash-a: rgba(94, 122, 100, 0.18);
+  --body-wash-b: rgba(8, 15, 12, 0.86);
+  --body-base: #080f0c;
+  --selection: rgba(154, 179, 151, 0.24);
+  --noise-a: rgba(244, 244, 242, 0.035);
+  --noise-b: rgba(244, 244, 242, 0.025);
+  --scroll-thumb: rgba(154, 179, 151, 0.32);
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  background:
+    radial-gradient(circle at 50% 0%, var(--room-tint, rgba(183, 194, 178, 0.22)), transparent 34rem),
+    radial-gradient(circle at 18% 14%, var(--body-wash-a), transparent 28rem),
+    radial-gradient(circle at 88% 2%, var(--body-wash-b), transparent 24rem),
+    var(--body-base);
+  color: rgb(var(--color-ink));
+  font-family: var(--font-sans);
+  letter-spacing: 0;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+::selection {
+  background: var(--selection);
+}
+
+.noise {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 60;
+  opacity: 0.22;
+  background-image:
+    linear-gradient(var(--noise-a) 1px, transparent 1px),
+    linear-gradient(90deg, var(--noise-b) 1px, transparent 1px);
+  background-size: 34px 34px, 34px 34px;
+  mix-blend-mode: multiply;
+}
+
+.soft-scroll {
+  scrollbar-color: var(--scroll-thumb) transparent;
+  scrollbar-width: thin;
+}
+
+.soft-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+
+.soft-scroll::-webkit-scrollbar-thumb {
+  background: var(--scroll-thumb);
+  border-radius: 999px;
+}
+
+.safe-top {
+  padding-top: calc(0.75rem + env(safe-area-inset-top));
+}
+
+.signal-bar {
+  animation: signal 1.4s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+.signal-bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.signal-bar:nth-child(3) {
+  animation-delay: 0.32s;
+}
+
+.signal-bar:nth-child(4) {
+  animation-delay: 0.48s;
+}
+
+@keyframes signal {
+  0%,
+  100% {
+    transform: scaleY(0.36);
+  }
+  50% {
+    transform: scaleY(1);
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-22px, -18px, 0);
+  }
+}
+
+.venue-still {
+  background:
+    linear-gradient(180deg, rgba(244, 244, 242, 0.06), rgba(8, 15, 12, 0.58)),
+    radial-gradient(circle at 52% 8%, rgba(244, 244, 242, 0.52), transparent 9rem),
+    radial-gradient(circle at 28% 12%, rgba(183, 194, 178, 0.42), transparent 12rem),
+    linear-gradient(115deg, rgba(8, 15, 12, 0.28), transparent 42%),
+    #151a16;
+  background-size: cover;
+  background-position: center;
+}
+
+.venue-atmosphere {
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 44% 28%, rgba(244, 244, 242, 0.16), transparent 12rem),
+    radial-gradient(circle at 72% 70%, var(--room-tint, rgba(94, 122, 100, 0.2)), transparent 22rem),
+    linear-gradient(180deg, rgba(244, 244, 242, 0.06), transparent 38%);
+}
+
+.venue-haze {
+  position: absolute;
+  inset: -20%;
+  opacity: 0.44;
+  background:
+    repeating-linear-gradient(105deg, transparent 0 34px, rgba(244, 244, 242, 0.055) 36px 38px),
+    radial-gradient(ellipse at 50% 42%, rgba(244, 244, 242, 0.2), transparent 34rem);
+  filter: blur(12px);
+  animation: drift 14s ease-in-out infinite alternate;
+}
+
+.venue-lines {
+  position: absolute;
+  inset: 0;
+  opacity: 0.24;
+  background-image:
+    linear-gradient(rgba(244, 244, 242, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 244, 242, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+.venue-silhouettes {
+  position: absolute;
+  inset: auto 3% 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 54%;
+  opacity: 0.7;
+}
+
+.venue-silhouettes span {
+  display: block;
+  width: clamp(1.75rem, 6vw, 5.4rem);
+  border-radius: 999px 999px 0 0;
+  background:
+    linear-gradient(180deg, rgba(244, 244, 242, 0.1), rgba(8, 15, 12, 0.86)),
+    var(--room-tint, rgba(94, 122, 100, 0.18));
+  filter: blur(0.4px);
+  transform: translateY(calc((var(--i) % 3) * 10px));
+}
+
+@media (max-width: 640px) {
+  .noise {
+    opacity: 0.16;
+  }
+}
