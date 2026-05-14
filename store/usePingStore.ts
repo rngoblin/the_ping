@@ -1,6 +1,6 @@
 "use client";
 
-import { create } from "zustand";
+import { create } from "zustand/react";
 import type { LiveStatus } from "@/data/currentLive";
 import { messagesByRoom as initialMessages, type ChatMessage } from "@/data/messages";
 import { rooms } from "@/data/rooms";

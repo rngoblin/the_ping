@@ -23,21 +23,68 @@
 }
 
 :root[data-theme="night"] {
-  --color-bg: 10 14 12;
-  --color-surface: 18 24 20;
-  --color-muted: 33 42 36;
-  --color-sage: 101 119 101;
-  --color-accent: 154 179 151;
-  --color-ink: 235 238 232;
-  --color-black: 244 244 242;
+  --color-bg: 9 13 11;
+  --color-surface: 17 23 21;
+  --color-muted: 23 31 28;
+  --color-sage: 29 38 34;
+  --color-accent: 143 203 115;
+  --color-ink: 230 236 232;
+  --color-black: 230 236 232;
   --body-wash-a: rgba(94, 122, 100, 0.18);
-  --body-wash-b: rgba(8, 15, 12, 0.86);
-  --body-base: #080f0c;
-  --selection: rgba(154, 179, 151, 0.24);
-  --noise-a: rgba(244, 244, 242, 0.035);
-  --noise-b: rgba(244, 244, 242, 0.025);
-  --scroll-thumb: rgba(154, 179, 151, 0.32);
+  --body-wash-b: rgba(127, 162, 135, 0.12);
+  --body-base: #090d0b;
+  --selection: rgba(168, 255, 96, 0.24);
+  --noise-a: rgba(230, 236, 232, 0.03);
+  --noise-b: rgba(230, 236, 232, 0.022);
+  --scroll-thumb: rgba(127, 162, 135, 0.34);
+  --dark-border: #2a3631;
+  --dark-text-secondary: #a3b0a7;
+  --dark-soft-phosphor: #7fa287;
+  --dark-signal: #8fcb73;
+  --dark-glow: #5e7a64;
+  --dark-danger: #d96b6b;
   color-scheme: dark;
+}
+
+:root[data-theme="night"] .border-ping-black\/10 {
+  border-color: #2a3631;
+}
+
+:root[data-theme="night"] .border-ping-accent\/30 {
+  border-color: rgba(143, 203, 115, 0.3);
+}
+
+:root[data-theme="night"] .text-ping-ink\/55,
+:root[data-theme="night"] .text-ping-ink\/50,
+:root[data-theme="night"] .text-ping-ink\/45,
+:root[data-theme="night"] .text-ping-ink\/40,
+:root[data-theme="night"] .text-ping-ink\/35 {
+  color: var(--dark-text-secondary);
+}
+
+:root[data-theme="night"] .bg-ping-surface\/80,
+:root[data-theme="night"] .bg-ping-surface\/75,
+:root[data-theme="night"] .bg-ping-surface\/65 {
+  background-color: rgba(23, 31, 28, 0.86);
+}
+
+:root[data-theme="night"] .bg-ping-bg\/80,
+:root[data-theme="night"] .bg-ping-bg\/72,
+:root[data-theme="night"] .bg-ping-bg\/82,
+:root[data-theme="night"] .bg-ping-bg\/90 {
+  background-color: rgba(9, 13, 11, 0.9);
+}
+
+:root[data-theme="night"] .bg-ping-bg\/55,
+:root[data-theme="night"] .bg-ping-bg\/45 {
+  background-color: rgba(29, 38, 34, 0.72);
+}
+
+:root[data-theme="night"] .bg-ping-sage,
+:root[data-theme="night"] .bg-ping-sage\/70,
+:root[data-theme="night"] .bg-ping-sage\/45,
+:root[data-theme="night"] .bg-ping-sage\/35 {
+  background-color: rgba(94, 122, 100, 0.45);
 }
 
 * {
