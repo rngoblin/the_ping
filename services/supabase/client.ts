@@ -2,8 +2,16 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const supabasePublishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? "";
+const keyLooksSecret = supabasePublishableKey.startsWith("sb_secret");
 
-export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey);
+export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKey && !keyLooksSecret);
+
+export const getSupabaseRuntimeStatus = () => ({
+  configured: isSupabaseConfigured,
+  hasUrl: Boolean(supabaseUrl),
+  hasPublishableKey: Boolean(supabasePublishableKey),
+  keyLooksSecret
+});
 
 let browserClient: SupabaseClient | null = null;
 

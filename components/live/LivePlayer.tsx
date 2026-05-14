@@ -20,16 +20,16 @@ export function LivePlayer() {
 
   return (
     <section className="live-player relative overflow-hidden rounded-md border border-ping-black/10 bg-ping-black shadow-mist">
-      <div className="venue-still relative min-h-[18.75rem] sm:min-h-[22rem] md:min-h-[30rem]">
+      <div className="venue-still relative isolate min-h-[18.75rem] sm:min-h-[22rem] md:min-h-[30rem]">
         <StreamEmbed />
         <VenueAtmosphere />
-        <div className="venue-glow absolute inset-0 opacity-35 mix-blend-screen" style={{ animation: "drift 10s linear infinite alternate" }}>
+        <div className="venue-glow pointer-events-none absolute inset-0 z-[2] opacity-35 mix-blend-screen" style={{ animation: "drift 10s linear infinite alternate" }}>
           <div className="h-full w-[120%] bg-[radial-gradient(circle_at_35%_50%,rgba(244,244,242,0.42),transparent_20rem)]" />
         </div>
 
         <ReactionPulses />
 
-        <div className="absolute inset-x-0 top-0 flex items-start justify-between gap-2 p-3 sm:p-5">
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex items-start justify-between gap-2 p-3 sm:p-5">
           <div className="rounded-full border border-ping-bg/30 bg-ping-bg/20 px-2.5 py-1.5 font-mono text-[9px] uppercase text-ping-bg backdrop-blur-md sm:px-3 sm:text-[10px]">
             {isLive ? `${currentLive.startedAt} local signal` : `starts in ${currentLive.startsInMinutes}m`}
           </div>
@@ -39,7 +39,7 @@ export function LivePlayer() {
           </div>
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 p-4 sm:p-7">
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 p-4 sm:p-7">
           {!isLive ? (
             <div className="mb-5 flex max-w-md items-center gap-3 rounded-lg border border-ping-bg/30 bg-ping-bg/18 p-3 text-ping-bg backdrop-blur-md">
               {isOffline ? <AlertCircle size={18} /> : <PingGlyph className="size-8 bg-ping-bg/20" />}
@@ -86,7 +86,7 @@ export function LivePlayer() {
               <motion.button
                 whileTap={{ scale: 0.95 }}
                 onClick={() => addReaction("heart")}
-                className="flex h-10 items-center justify-center gap-2 rounded-full border border-ping-bg/35 bg-ping-bg/20 px-4 text-sm font-medium text-ping-bg backdrop-blur-md transition hover:bg-ping-bg/30 sm:h-12 sm:px-5"
+                className="pulse-action pointer-events-auto flex h-10 items-center justify-center gap-2 rounded-full border bg-ping-bg/20 px-4 text-sm font-medium backdrop-blur-md transition sm:h-12 sm:px-5"
               >
                 <Heart size={17} />
                 send pulse

@@ -24,11 +24,11 @@ export function ReactionBar() {
               whileTap={{ scale: 0.94 }}
               key={reaction.emoji}
               onClick={() => addReaction(reaction.emoji)}
-              className="group grid size-10 place-items-center rounded-full border border-ping-black/10 bg-ping-surface text-ping-ink transition hover:border-ping-accent/40 hover:bg-ping-sage/50 sm:size-11"
+              className="group grid size-10 place-items-center rounded-full border border-ping-black/10 bg-ping-surface text-ping-ink transition hover:border-ping-pink/45 hover:bg-ping-softPink/20 sm:size-11"
               aria-label={reaction.label}
               title={reaction.label}
             >
-              <Icon size={18} className="transition group-hover:text-ping-accent" />
+              <Icon size={18} className="transition group-hover:text-ping-pink" />
             </motion.button>
           );
         })}
@@ -45,7 +45,7 @@ export function ReactionPulses() {
   const removeReaction = usePingStore((state) => state.removeReaction);
 
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 z-[8] overflow-hidden">
       <AnimatePresence>
         {reactions.map((reaction) => (
           <motion.div
@@ -55,8 +55,8 @@ export function ReactionPulses() {
             exit={{ opacity: 0 }}
             transition={{ duration: 1.8, ease: "easeOut" }}
             onAnimationComplete={() => removeReaction(reaction.id)}
-            className="absolute bottom-8 grid size-12 place-items-center rounded-full border border-ping-bg/45 bg-ping-bg/35 text-ping-accent backdrop-blur-md"
-            style={{ left: `${reaction.x}%`, color: reaction.color }}
+            className="absolute bottom-8 grid size-12 place-items-center rounded-full border border-ping-bg/45 bg-ping-bg/35 text-ping-pink backdrop-blur-md"
+            style={{ left: `${reaction.x}%`, color: "var(--pulse-pink)" }}
           >
             <span className="size-4 rounded-full bg-current opacity-45 shadow-[0_0_28px_currentColor]" />
           </motion.div>

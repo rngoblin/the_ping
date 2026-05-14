@@ -71,7 +71,7 @@ export function NotifyModal({ act, onClose }: NotifyModalProps) {
             </div>
 
             {isSaved ? (
-              <div className="rounded-lg border border-ping-accent/25 bg-ping-sage/35 p-4">
+              <div className="rounded-lg border border-ping-pink/25 bg-ping-softPink/15 p-4">
                 <p className="text-sm font-medium">saved for the next transmission</p>
                 <p className="mt-2 text-sm leading-relaxed text-ping-ink/55">No messages will be sent yet. The signal is saved for the test.</p>
               </div>
@@ -84,7 +84,7 @@ export function NotifyModal({ act, onClose }: NotifyModalProps) {
                   className="h-12 w-full rounded-full border border-ping-black/10 bg-ping-surface px-4 text-sm outline-none placeholder:text-ping-ink/35 focus:border-ping-accent/60"
                   required
                 />
-                <button className="h-11 w-full rounded-full bg-ping-accent text-sm font-medium text-ping-bg transition hover:bg-ping-black">
+                <button className="pulse-fill h-11 w-full rounded-full text-sm font-medium transition">
                   save signal
                 </button>
               </form>

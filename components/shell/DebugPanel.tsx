@@ -4,6 +4,7 @@ import { Copy, Trash2, X } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 import type { LiveStatus } from "@/data/currentLive";
 import { getRealtimeProviderName } from "@/services/realtime";
+import { getSupabaseRuntimeStatus } from "@/services/supabase/client";
 
 export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const events = usePingStore((state) => state.events);
@@ -17,6 +18,7 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const setLiveStatus = usePingStore((state) => state.setLiveStatus);
   const clearLocalTestState = usePingStore((state) => state.clearLocalTestState);
   const resetIdentity = usePingStore((state) => state.resetIdentity);
+  const supabaseStatus = getSupabaseRuntimeStatus();
 
   if (!isOpen) {
     return null;
@@ -85,6 +87,13 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
         <section className="rounded-lg border border-ping-bg/10 p-3">
           <p className="mb-2 font-mono text-[10px] uppercase text-ping-bg/45">realtime</p>
           <p className="font-mono text-xs uppercase text-ping-bg/70">{getRealtimeProviderName()}</p>
+          <p className="mt-2 text-xs leading-relaxed text-ping-bg/45">
+            Supabase {supabaseStatus.configured ? "configured" : "not configured"} / URL {supabaseStatus.hasUrl ? "yes" : "missing"} / key{" "}
+            {supabaseStatus.hasPublishableKey ? "yes" : "missing"}
+          </p>
+          {supabaseStatus.keyLooksSecret ? (
+            <p className="mt-2 text-xs leading-relaxed text-ping-softPink">Secret key detected. Browser realtime is disabled until a publishable key is used.</p>
+          ) : null}
         </section>
 
         <section className="rounded-lg border border-ping-bg/10 p-3">

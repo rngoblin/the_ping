@@ -78,7 +78,7 @@ export function ScheduleDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: 
                           {featureFlags.enableScheduleNotify ? (
                             <button
                               onClick={() => setNotifyAct(act)}
-                              className="mt-4 flex h-10 items-center gap-2 rounded-full border border-ping-accent/30 bg-ping-bg px-4 text-sm text-ping-accent transition hover:bg-ping-sage/45"
+                              className="pulse-action mt-4 flex h-10 items-center gap-2 rounded-full border bg-ping-bg px-4 text-sm transition"
                             >
                               <Bell size={15} />
                               notify me

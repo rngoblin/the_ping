@@ -10,12 +10,16 @@
   --color-muted: 215 218 211;
   --color-sage: 183 194 178;
   --color-accent: 94 122 100;
+  --color-pink: 255 107 138;
+  --color-soft-pink: 227 165 180;
   --color-ink: 26 26 26;
   --color-black: 8 15 12;
   --body-wash-a: rgba(183, 194, 178, 0.36);
   --body-wash-b: rgba(215, 218, 211, 0.7);
   --body-base: #f4f4f2;
   --selection: rgba(94, 122, 100, 0.2);
+  --pulse-pink: #ff6b8a;
+  --pink-glow: rgba(201, 141, 155, 0.28);
   --noise-a: rgba(8, 15, 12, 0.035);
   --noise-b: rgba(8, 15, 12, 0.025);
   --scroll-thumb: rgba(94, 122, 100, 0.28);
@@ -28,12 +32,16 @@
   --color-muted: 23 31 28;
   --color-sage: 29 38 34;
   --color-accent: 168 255 96;
+  --color-pink: 255 90 124;
+  --color-soft-pink: 217 107 132;
   --color-ink: 230 236 232;
   --color-black: 230 236 232;
-  --body-wash-a: rgba(94, 122, 100, 0.08);
-  --body-wash-b: rgba(127, 162, 135, 0.055);
+  --body-wash-a: rgba(94, 122, 100, 0.04);
+  --body-wash-b: rgba(127, 162, 135, 0.025);
   --body-base: #090d0b;
   --selection: rgba(168, 255, 96, 0.24);
+  --pulse-pink: #ff5a7c;
+  --pink-glow: rgba(255, 90, 124, 0.22);
   --noise-a: rgba(230, 236, 232, 0.024);
   --noise-b: rgba(168, 255, 96, 0.014);
   --scroll-thumb: rgba(127, 162, 135, 0.34);
@@ -42,6 +50,9 @@
   --dark-soft-phosphor: #7fa287;
   --dark-signal: #a8ff60;
   --dark-glow: #5e7a64;
+  --dark-pink: #ff5a7c;
+  --dark-soft-pink: #d96b84;
+  --dark-muted-pink: #8a4f63;
   --dark-danger: #d96b6b;
   color-scheme: dark;
 }
@@ -84,7 +95,7 @@
 :root[data-theme="night"] .bg-ping-sage\/70,
 :root[data-theme="night"] .bg-ping-sage\/45,
 :root[data-theme="night"] .bg-ping-sage\/35 {
-  background-color: rgba(94, 122, 100, 0.56);
+  background-color: rgba(29, 38, 34, 0.94);
 }
 
 :root[data-theme="night"] .ping-glyph {
@@ -93,8 +104,8 @@
 
 :root[data-theme="night"] .ping-app {
   background:
-    radial-gradient(circle at 48% -8%, rgba(94, 122, 100, 0.1), transparent 36rem),
-    linear-gradient(180deg, #090d0b 0%, #050706 58%, #090d0b 100%);
+    radial-gradient(circle at 52% -10%, rgba(168, 255, 96, 0.035), transparent 31rem),
+    linear-gradient(180deg, #090d0b 0%, #050706 58%, #080808 100%);
 }
 
 :root[data-theme="night"] .shadow-mist {
@@ -148,8 +159,8 @@ body {
 
 :root[data-theme="night"] body {
   background:
-    radial-gradient(circle at 50% -10%, rgba(127, 162, 135, 0.09), transparent 34rem),
-    radial-gradient(circle at 16% 12%, rgba(94, 122, 100, 0.055), transparent 24rem),
+    radial-gradient(circle at 50% -10%, rgba(127, 162, 135, 0.045), transparent 32rem),
+    radial-gradient(circle at 16% 12%, rgba(94, 122, 100, 0.028), transparent 22rem),
     #090d0b;
 }
 
@@ -180,11 +191,11 @@ button {
 }
 
 :root[data-theme="night"] .noise {
-  opacity: 0.34;
+  opacity: 0.24;
   background-image:
     linear-gradient(rgba(230, 236, 232, 0.014) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(168, 255, 96, 0.01) 1px, transparent 1px),
-    radial-gradient(circle at 50% 50%, rgba(168, 255, 96, 0.026), transparent 1px);
+    linear-gradient(90deg, rgba(230, 236, 232, 0.01) 1px, transparent 1px),
+    radial-gradient(circle at 50% 50%, rgba(168, 255, 96, 0.018), transparent 1px);
   background-size: 36px 36px, 36px 36px, 7px 7px;
   mix-blend-mode: screen;
 }
@@ -268,6 +279,7 @@ button {
 }
 
 .venue-atmosphere {
+  pointer-events: none;
   overflow: hidden;
   background:
     radial-gradient(circle at 44% 28%, rgba(244, 244, 242, 0.16), transparent 12rem),
@@ -278,8 +290,8 @@ button {
 :root[data-theme="night"] .venue-atmosphere {
   background:
     radial-gradient(circle at 48% 24%, rgba(230, 236, 232, 0.07), transparent 10rem),
-    radial-gradient(circle at 72% 70%, rgba(94, 122, 100, 0.1), transparent 22rem),
-    linear-gradient(180deg, rgba(168, 255, 96, 0.018), transparent 42%);
+    radial-gradient(circle at 72% 70%, rgba(94, 122, 100, 0.055), transparent 22rem),
+    linear-gradient(180deg, rgba(168, 255, 96, 0.012), transparent 42%);
 }
 
 .venue-haze {
@@ -294,7 +306,7 @@ button {
 }
 
 :root[data-theme="night"] .venue-haze {
-  opacity: 0.28;
+  opacity: 0.22;
   background:
     repeating-linear-gradient(105deg, transparent 0 38px, rgba(230, 236, 232, 0.018) 40px 41px),
     radial-gradient(ellipse at 50% 40%, rgba(230, 236, 232, 0.09), transparent 31rem);
@@ -358,7 +370,7 @@ button {
 
 :root[data-theme="night"] .room-vibe-panel {
   background:
-    radial-gradient(circle at 82% 24%, rgba(168, 255, 96, 0.075), transparent 5.5rem),
+    radial-gradient(circle at 82% 24%, rgba(168, 255, 96, 0.052), transparent 5.5rem),
     linear-gradient(145deg, rgba(17, 23, 21, 0.96), rgba(9, 13, 11, 0.96) 62%);
 }
 
@@ -374,7 +386,7 @@ button {
 
 :root[data-theme="night"] .chat-panel {
   background:
-    radial-gradient(circle at 16% 6%, rgba(94, 122, 100, 0.105), transparent 15rem),
+    radial-gradient(circle at 16% 6%, rgba(94, 122, 100, 0.055), transparent 15rem),
     linear-gradient(160deg, rgba(17, 23, 21, 0.94), rgba(9, 13, 11, 0.96) 48%);
 }
 
@@ -410,7 +422,8 @@ button {
 }
 
 :root[data-theme="night"] .reaction-bar button:hover {
-  border-color: rgba(168, 255, 96, 0.42);
+  border-color: rgba(255, 90, 124, 0.5);
+  background-color: rgba(138, 79, 99, 0.2);
 }
 
 :root[data-theme="night"] .room-switcher button {
@@ -420,8 +433,28 @@ button {
 
 :root[data-theme="night"] .room-switcher button[class*="border-ping-accent"] {
   border-color: rgba(168, 255, 96, 0.54);
-  background: rgba(94, 122, 100, 0.58);
+  background: rgba(29, 38, 34, 0.96);
   color: #e6ece8;
+}
+
+.pulse-action {
+  border-color: rgb(var(--color-pink) / 0.36);
+  color: rgb(var(--color-pink));
+}
+
+.pulse-action:hover {
+  background-color: rgb(var(--color-pink) / 0.12);
+  box-shadow: 0 0 28px var(--pink-glow);
+}
+
+.pulse-fill {
+  background-color: rgb(var(--color-pink));
+  color: #fff;
+}
+
+.pulse-fill:hover {
+  background-color: rgb(var(--color-soft-pink));
+  box-shadow: 0 0 26px var(--pink-glow);
 }
 
 @media (max-width: 640px) {

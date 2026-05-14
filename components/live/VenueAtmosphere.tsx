@@ -9,7 +9,7 @@ export function VenueAtmosphere() {
   const room = rooms.find((item) => item.id === activeRoomId) ?? rooms[0];
 
   return (
-    <div className="venue-atmosphere absolute inset-0" style={{ "--room-tint": room.tint } as CSSProperties}>
+    <div className="venue-atmosphere pointer-events-none absolute inset-0 z-[2]" style={{ "--room-tint": room.tint } as CSSProperties}>
       <div className="venue-haze" />
       <div className="venue-silhouettes">
         {Array.from({ length: 15 }).map((_, index) => (

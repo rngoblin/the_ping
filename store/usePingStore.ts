@@ -299,14 +299,13 @@ export const usePingStore = create<PingStore>((set, get) => ({
   },
   addReaction: (emoji) => {
     const { activeRoomId, localUser } = get();
-    const room = get().rooms.find((item) => item.id === activeRoomId) ?? get().rooms[0];
     const pulse = {
       id: createId(),
       emoji,
       roomId: activeRoomId,
       userId: localUser?.userId ?? "local-only",
       x: 16 + Math.random() * 68,
-      color: room.accent
+      color: "#FF5A7C"
     };
 
     void getRealtimeAdapter().sendReaction(pulse).catch(() => mockRealtime.sendReaction(pulse));

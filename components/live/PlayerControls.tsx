@@ -20,7 +20,7 @@ export function PlayerControls() {
   const setVolume = usePingStore((state) => state.setVolume);
 
   return (
-    <div className="player-controls flex w-full max-w-[20rem] items-center gap-1.5 rounded-full border border-ping-bg/30 bg-ping-bg/18 px-2 py-1.5 text-ping-bg backdrop-blur-md sm:w-auto sm:max-w-none sm:gap-3 sm:px-3 sm:py-2">
+    <div className="player-controls pointer-events-auto flex w-full max-w-[20rem] items-center gap-1.5 rounded-full border border-ping-bg/30 bg-ping-bg/18 px-2 py-1.5 text-ping-bg backdrop-blur-md sm:w-auto sm:max-w-none sm:gap-3 sm:px-3 sm:py-2">
       <span className="flex items-center gap-1.5 rounded-full bg-ping-bg/16 px-2 py-1 font-mono text-[9px] uppercase sm:gap-2 sm:px-3 sm:text-[10px]">
         <span className="size-2 rounded-full bg-ping-sage" />
         live

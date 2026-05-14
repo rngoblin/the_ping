@@ -30,7 +30,7 @@ type ReactionRow = {
 };
 
 const messageColumns = "id, room_id, user_id, nickname, body, created_at";
-const reactionColors = ["#A8FF60", "#8FCB73", "#7FA287", "#5E7A64"];
+const reactionColors = ["#FF5A7C", "#D96B84", "#8A4F63", "#A8FF60"];
 const messageChannels = new Map<string, ReturnType<NonNullable<ReturnType<typeof getSupabaseClient>>["channel"]>>();
 let reactionChannel: ReturnType<NonNullable<ReturnType<typeof getSupabaseClient>>["channel"]> | null = null;
 
@@ -242,12 +242,20 @@ export const supabaseRealtime: RealtimeAdapter = {
         type: "broadcast",
         event: "message",
         payload: broadcastMessage
-      });
+      }).catch(() => undefined);
 
       return broadcastMessage;
     }
 
-    return toChatMessage(data as MessageRow);
+    const persistedMessage = toChatMessage(data as MessageRow);
+    const channel = await getOrCreateMessageChannel(roomId);
+    await channel?.send({
+      type: "broadcast",
+      event: "message",
+      payload: persistedMessage
+    }).catch(() => undefined);
+
+    return persistedMessage;
   },
 
   subscribeToPresence: (roomId: string, callback: PresenceCallback, user?: PresenceUser) => {
@@ -321,12 +329,19 @@ export const supabaseRealtime: RealtimeAdapter = {
         type: "broadcast",
         event: "reaction",
         payload: reaction
-      });
+      }).catch(() => undefined);
 
       return reaction;
     }
 
-    return toReaction(data as ReactionRow);
+    const persistedReaction = toReaction(data as ReactionRow);
+    await reactionChannel?.send({
+      type: "broadcast",
+      event: "reaction",
+      payload: persistedReaction
+    }).catch(() => undefined);
+
+    return persistedReaction;
   },
 
   subscribeToReactions: (callback: ReactionCallback) => {

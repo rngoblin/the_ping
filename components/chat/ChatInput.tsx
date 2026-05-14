@@ -26,7 +26,7 @@ export function ChatInput() {
         type="submit"
         aria-label="Send message"
         title="Send message"
-        className="grid size-11 shrink-0 place-items-center rounded-full bg-ping-accent text-ping-bg transition hover:bg-ping-black"
+        className="pulse-fill grid size-11 shrink-0 place-items-center rounded-full transition"
       >
         <Send size={17} />
       </button>

@@ -16,6 +16,8 @@ const config: Config = {
           muted: "rgb(var(--color-muted) / <alpha-value>)",
           sage: "rgb(var(--color-sage) / <alpha-value>)",
           accent: "rgb(var(--color-accent) / <alpha-value>)",
+          pink: "rgb(var(--color-pink) / <alpha-value>)",
+          softPink: "rgb(var(--color-soft-pink) / <alpha-value>)",
           ink: "rgb(var(--color-ink) / <alpha-value>)",
           black: "rgb(var(--color-black) / <alpha-value>)"
         }

@@ -33,6 +33,8 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=...
 
 Use a browser-safe Supabase Publishable key (`sb_publishable_...`). Anything prefixed `NEXT_PUBLIC_` is bundled into the browser. Do not put private secret/service-role keys in this frontend.
 
+The host/debug panel shows whether the deployed app is actually using Supabase or has fallen back to mock realtime.
+
 ## 3. Run Locally
 
 ```bash
@@ -75,6 +77,8 @@ In GitHub repo settings:
 5. Open `https://rngoblin.github.io/the_ping/`.
 
 If secrets are not set, the deployed app will still work, but it will use mock realtime.
+
+The deploy workflow has a guardrail: if the public browser key starts with `sb_secret`, the build fails instead of leaking the key into the static bundle.
 
 ## 6. Configure Tonight
 
