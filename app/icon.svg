@@ -1,6 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none" stroke="#080F0C" stroke-linecap="round" stroke-linejoin="round">
-  <rect width="1024" height="1024" fill="#F4F4F2" stroke="none"/>
-  <g stroke-width="26">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" fill="none" stroke-linecap="round" stroke-linejoin="round">
+  <style>
+    :root {
+      color: #080f0c;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        color: #ffffff;
+      }
+    }
+  </style>
+  <g stroke="currentColor" stroke-width="26">
     <path d="M218 324H706V455H286V338"/>
     <path d="M552 377h1M611 377h1" stroke-width="34"/>
     <path d="M214 430V562H706"/>
