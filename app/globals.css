@@ -87,6 +87,10 @@
   background-color: rgba(94, 122, 100, 0.45);
 }
 
+:root[data-theme="night"] .ping-glyph {
+  color: #ffffff;
+}
+
 * {
   box-sizing: border-box;
 }

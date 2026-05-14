@@ -2,28 +2,31 @@ export function PingGlyph({ className = "" }: { className?: string }) {
   return (
     <svg
       aria-hidden="true"
-      viewBox="0 0 160 130"
-      className={`size-9 text-ping-black ${className}`}
+      viewBox="0 0 1024 1024"
+      className={`ping-glyph size-9 text-ping-black ${className}`}
       fill="none"
       stroke="currentColor"
-      strokeLinecap="butt"
-      strokeLinejoin="miter"
+      strokeLinecap="round"
+      strokeLinejoin="round"
     >
-      <path d="M34 39H108V62H46V39" strokeWidth="7" />
-      <path d="M34 39H46" strokeWidth="7" />
-      <path d="M83 50h.1M92 50h.1" strokeWidth="8" strokeLinecap="round" />
+      <g strokeWidth="26">
+        <path d="M218 324H706V455H286V338" />
+        <path d="M552 377h1M611 377h1" strokeWidth="34" />
 
-      <path d="M34 64V76H108" strokeWidth="7" />
-      <path d="M34 83H108" strokeWidth="7" />
-      <path d="M34 95L108 83" strokeWidth="7" />
-      <path d="M34 97H108" strokeWidth="7" />
+        <path d="M214 430V562H706" />
+        <path d="M214 510H706" />
+        <path d="M214 562H704" />
 
-      <path d="M34 108H108V125" strokeWidth="7" />
-      <path d="M34 108V125H48V113" strokeWidth="7" />
+        <path d="M214 656L706 584" />
+        <path d="M214 657H706" />
 
-      <path d="M112 31A20 20 0 0 1 132 51" strokeWidth="7" />
-      <path d="M112 18A33 33 0 0 1 145 51" strokeWidth="7" />
-      <path d="M112 6A45 45 0 0 1 157 51" strokeWidth="7" />
+        <path d="M214 735H706V869" />
+        <path d="M214 735V869H306V785" />
+
+        <path d="M723 262A166 166 0 0 1 880 356" />
+        <path d="M721 207A225 225 0 0 1 935 356" />
+        <path d="M729 146A290 290 0 0 1 1000 356" />
+      </g>
     </svg>
   );
 }
