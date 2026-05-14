@@ -80,6 +80,8 @@ If secrets are not set, the deployed app will still work, but it will use mock r
 
 The deploy workflow has a guardrail: if the public browser key starts with `sb_secret`, the build fails instead of leaking the key into the static bundle.
 
+For this closed night test, the frontend also has a temporary browser-safe anon fallback config. This is enough for GitHub Pages to connect to Supabase immediately, but persistence still requires `supabase/schema.sql` to be applied in the Supabase SQL editor.
+
 ## 6. Configure Tonight
 
 Edit `data/liveTestConfig.ts`:

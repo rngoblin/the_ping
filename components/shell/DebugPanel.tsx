@@ -91,6 +91,9 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
             Supabase {supabaseStatus.configured ? "configured" : "not configured"} / URL {supabaseStatus.hasUrl ? "yes" : "missing"} / key{" "}
             {supabaseStatus.hasPublishableKey ? "yes" : "missing"}
           </p>
+          {supabaseStatus.usingNightTestFallback ? (
+            <p className="mt-2 text-xs leading-relaxed text-ping-bg/45">Using built-in night test Supabase config.</p>
+          ) : null}
           {supabaseStatus.keyLooksSecret ? (
             <p className="mt-2 text-xs leading-relaxed text-ping-softPink">Secret key detected. Browser realtime is disabled until a publishable key is used.</p>
           ) : null}

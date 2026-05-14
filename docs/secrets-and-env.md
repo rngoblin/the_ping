@@ -29,5 +29,6 @@ Important:
 - Use a browser-safe Supabase Publishable key (`sb_publishable_...`).
 - Do not place private/secret API keys in this app while it is hosted as static GitHub Pages.
 - The GitHub Pages workflow refuses to build if the browser key starts with `sb_secret`.
+- For the current closed night test, the frontend includes a temporary browser-safe Supabase anon fallback so GitHub Pages can run realtime even before repository secrets are configured.
 - If PING later needs private APIs, add a backend/API route or serverless proxy and keep private keys there.
 - If Supabase env vars are missing, PING falls back to `mockRealtime`.
