@@ -7,6 +7,7 @@ export type ChatMessage = {
   avatar: string;
   message: string;
   timestamp: string;
+  kind?: "user" | "system";
 };
 
 export const messagesByRoom: Record<string, ChatMessage[]> = {

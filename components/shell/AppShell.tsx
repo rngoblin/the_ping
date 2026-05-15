@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, type CSSProperties } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { PingGlyph } from "@/components/brand/PingGlyph";
 import { PingWordmark } from "@/components/brand/PingWordmark";
@@ -27,6 +28,7 @@ export function AppShell() {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
   const [isDebugOpen, setIsDebugOpen] = useState(false);
   const hasHydratedSession = usePingStore((state) => state.hasHydratedSession);
+  const sessionWasRestored = usePingStore((state) => state.sessionWasRestored);
   const localUser = usePingStore((state) => state.localUser);
   const featureFlags = usePingStore((state) => state.featureFlags);
   const activeAnnouncement = usePingStore((state) => state.activeAnnouncement);
@@ -45,6 +47,8 @@ export function AppShell() {
   const presenceByRoom = usePingStore((state) => state.presenceByRoom);
   const mobilePanel = usePingStore((state) => state.mobilePanel);
   const setMobilePanel = usePingStore((state) => state.setMobilePanel);
+  const noteRoomEntry = usePingStore((state) => state.noteRoomEntry);
+  const [showRecognizedSignal, setShowRecognizedSignal] = useState(false);
   const activeRoom = rooms.find((room) => room.id === activeRoomId) ?? rooms[0];
   const activeEvent = events.find((event) => event.id === activeEventId);
   const activePresence = presenceByRoom[activeRoomId];
@@ -57,6 +61,24 @@ export function AppShell() {
     hydrateLocalSession();
     hydrateTheme();
   }, [hydrateLocalSession, hydrateTheme]);
+
+  useEffect(() => {
+    if (!localUser || !sessionWasRestored) {
+      return;
+    }
+
+    setShowRecognizedSignal(true);
+    const timeout = window.setTimeout(() => setShowRecognizedSignal(false), 1800);
+    return () => window.clearTimeout(timeout);
+  }, [localUser, sessionWasRestored]);
+
+  useEffect(() => {
+    if (!localUser) {
+      return;
+    }
+
+    noteRoomEntry(activeRoomId);
+  }, [activeRoomId, localUser, noteRoomEntry]);
 
   useEffect(() => {
     const adapter = getRealtimeAdapter();
@@ -134,6 +156,37 @@ export function AppShell() {
       }
     >
       <div className="noise" />
+      <div className="ambient-motion pointer-events-none" aria-hidden="true">
+        <div className="ambient-drift" />
+        <div className="ambient-grid" />
+      </div>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={activeRoomId}
+          aria-hidden="true"
+          className="room-transition-glow pointer-events-none fixed inset-0 z-[5]"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.42, 0] }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+        />
+      </AnimatePresence>
+      <AnimatePresence>
+        {showRecognizedSignal && localUser ? (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.98 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.98 }}
+            transition={{ duration: 0.34, ease: "easeOut" }}
+            className="pointer-events-none fixed left-1/2 top-[calc(1rem+env(safe-area-inset-top))] z-50 flex -translate-x-1/2 items-center gap-3 rounded-full border border-ping-accent/25 bg-ping-surface/88 px-3 py-2 text-ping-ink shadow-line backdrop-blur-md"
+          >
+            <span className="grid size-8 place-items-center rounded-md border border-ping-black/10 bg-ping-bg/80 p-1 shadow-[0_0_22px_var(--room-tint)]">
+              <PixelSigil seed={localUser.avatarSeed} className="size-full signal-recognized-sigil" />
+            </span>
+            <span className="font-mono text-[10px] uppercase tracking-[0.16em] text-ping-ink/55">signal recognized</span>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
       <div className="relative z-10 min-h-dvh">
         <div className="flex w-full flex-col">
           <div className="grid flex-1 gap-3 p-3 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-[calc(5.25rem+env(safe-area-inset-bottom))] sm:gap-4 sm:p-4 sm:pt-[calc(1rem+env(safe-area-inset-top))] sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:grid-cols-[minmax(0,1fr)_24rem] xl:gap-4 xl:p-4 2xl:grid-cols-[minmax(0,1fr)_25rem]">

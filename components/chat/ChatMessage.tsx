@@ -2,6 +2,16 @@ import type { ChatMessage as ChatMessageType } from "@/data/messages";
 import { PixelSigil } from "@/components/identity/PixelSigil";
 
 export function ChatMessage({ message }: { message: ChatMessageType }) {
+  if (message.kind === "system") {
+    return (
+      <article className="flex justify-center py-1">
+        <p className="rounded-full border border-ping-black/10 bg-ping-bg/45 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.12em] text-ping-ink/35">
+          {message.message}
+        </p>
+      </article>
+    );
+  }
+
   return (
     <article className="flex gap-3">
       <div className="grid size-8 shrink-0 place-items-center rounded-md border border-ping-black/10 bg-ping-muted/70 p-1 shadow-line">

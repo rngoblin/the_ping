@@ -31,6 +31,7 @@ export type LocalUserSession = {
   inviteCode?: string;
   avatarSeed: string;
   sigilVariant?: number;
+  enteredAt?: string;
 };
 
 export type NotifyLead = {
@@ -43,6 +44,7 @@ export type NotifyLead = {
 
 type PingStore = {
   hasHydratedSession: boolean;
+  sessionWasRestored: boolean;
   localUser: LocalUserSession | null;
   activeEventId: string;
   events: PingEvent[];
@@ -67,6 +69,7 @@ type PingStore = {
   enterSession: (nickname: string, inviteCode?: string, sigilVariant?: number) => void;
   resetIdentity: () => void;
   setActiveRoom: (roomId: string) => void;
+  noteRoomEntry: (roomId?: string) => void;
   setActiveEvent: (eventId: string) => void;
   setLiveStatus: (status: LiveStatus) => void;
   setCurrentLivePatch: (patch: Partial<PingEvent["currentLive"]>) => void;
@@ -101,12 +104,14 @@ const createId = () => {
 const sessionStorageKey = "ping.localSession.v03";
 const notifyStorageKey = "ping.notifyLeads.v03";
 const themeStorageKey = "ping.themeMode.v01";
+const roomEntryStorageKey = "ping.roomEntryEvents.v01";
 
 const activeEvent = eventConfig.events.find((event) => event.id === eventConfig.currentEventId) ?? eventConfig.events[0];
 
 const createAvatarSeed = (nickname: string, sigilVariant = 0) => createSigilSeed(nickname, sigilVariant);
 const canSendChatMessage = createThrottle(900);
 const canSendReaction = createThrottle(420);
+const roomEntryCooldownMs = 30 * 60 * 1000;
 
 const loadJson = <T,>(key: string, fallback: T): T => {
   if (typeof window === "undefined") {
@@ -160,6 +165,7 @@ export const createPresenceUser = (session: LocalUserSession, roomId: string): P
 
 export const usePingStore = create<PingStore>((set, get) => ({
   hasHydratedSession: false,
+  sessionWasRestored: false,
   localUser: null,
   activeEventId: activeEvent.id,
   events: eventConfig.events,
@@ -187,9 +193,22 @@ export const usePingStore = create<PingStore>((set, get) => ({
   volume: 72,
   mobilePanel: "none",
   hydrateLocalSession: () => {
+    const storedSession = loadJson<LocalUserSession | null>(sessionStorageKey, null);
+    const localUser = storedSession
+      ? {
+          ...storedSession,
+          enteredAt: storedSession.enteredAt ?? new Date().toISOString()
+        }
+      : null;
+
+    if (storedSession && !storedSession.enteredAt) {
+      persistJson(sessionStorageKey, localUser);
+    }
+
     set({
       hasHydratedSession: true,
-      localUser: loadJson<LocalUserSession | null>(sessionStorageKey, null),
+      sessionWasRestored: Boolean(storedSession),
+      localUser,
       notifyLeads: loadJson<NotifyLead[]>(notifyStorageKey, [])
     });
   },
@@ -210,18 +229,19 @@ export const usePingStore = create<PingStore>((set, get) => ({
       nickname: cleanNickname,
       inviteCode: inviteCode?.trim() || undefined,
       avatarSeed: createAvatarSeed(cleanNickname, sigilVariant),
-      sigilVariant
+      sigilVariant,
+      enteredAt: new Date().toISOString()
     };
 
     persistJson(sessionStorageKey, session);
-    set({ localUser: session, hasHydratedSession: true });
+    set({ localUser: session, hasHydratedSession: true, sessionWasRestored: false });
   },
   resetIdentity: () => {
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(sessionStorageKey);
     }
 
-    set({ localUser: null, hasHydratedSession: true });
+    set({ localUser: null, hasHydratedSession: true, sessionWasRestored: false });
   },
   setActiveRoom: (roomId) => {
     const room = get().rooms.find((item) => item.id === roomId);
@@ -236,6 +256,41 @@ export const usePingStore = create<PingStore>((set, get) => ({
           count: room?.count ?? 0,
           avatars: ["salma:0", "niko:1", "mei:2", "lo:0", "ve:1", "june:2", "anna:0"]
         }
+      }
+    }));
+  },
+  noteRoomEntry: (roomId) => {
+    const { localUser, activeRoomId } = get();
+    const nextRoomId = roomId ?? activeRoomId;
+
+    if (!localUser || typeof window === "undefined") {
+      return;
+    }
+
+    const now = Date.now();
+    const key = `${localUser.userId}:${nextRoomId}`;
+    const stored = loadJson<Record<string, number>>(roomEntryStorageKey, {});
+
+    if (stored[key] && now - stored[key] < roomEntryCooldownMs) {
+      return;
+    }
+
+    persistJson(roomEntryStorageKey, { ...stored, [key]: now });
+
+    const systemMessage: ChatMessage = {
+      id: `system-entry-${key}-${now}`,
+      roomId: nextRoomId,
+      username: "room",
+      avatar: createSigilSeed("PING", 0),
+      message: `${localUser.nickname} entered the room`,
+      timestamp: "now",
+      kind: "system"
+    };
+
+    set((state) => ({
+      messagesByRoom: {
+        ...state.messagesByRoom,
+        [nextRoomId]: dedupeMessages([...(state.messagesByRoom[nextRoomId] ?? []), systemMessage]).slice(-50)
       }
     }));
   },
@@ -284,12 +339,16 @@ export const usePingStore = create<PingStore>((set, get) => ({
   },
   setActiveAnnouncement: (announcement) => set({ activeAnnouncement: announcement }),
   setRoomMessages: (roomId, messages) =>
-    set((state) => ({
-      messagesByRoom: {
-        ...state.messagesByRoom,
-        [roomId]: dedupeMessages(messages).slice(-50)
-      }
-    })),
+    set((state) => {
+      const systemMessages = (state.messagesByRoom[roomId] ?? []).filter((message) => message.kind === "system");
+
+      return {
+        messagesByRoom: {
+          ...state.messagesByRoom,
+          [roomId]: dedupeMessages([...messages, ...systemMessages]).slice(-50)
+        }
+      };
+    }),
   setRoomPresence: (roomId, presence) =>
     set((state) => ({
       presenceByRoom: {
@@ -427,9 +486,10 @@ export const usePingStore = create<PingStore>((set, get) => ({
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(sessionStorageKey);
       window.localStorage.removeItem(notifyStorageKey);
+      window.localStorage.removeItem(roomEntryStorageKey);
     }
 
-    set({ localUser: null, notifyLeads: [], hasHydratedSession: true });
+    set({ localUser: null, notifyLeads: [], hasHydratedSession: true, sessionWasRestored: false });
   },
   setThemeMode: (themeMode) => {
     persistJson(themeStorageKey, themeMode);
