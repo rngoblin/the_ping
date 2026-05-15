@@ -17,10 +17,6 @@ export const messagesByRoom: Record<string, ChatMessage[]> = {
     { id: "a1", roomId: "ambient", username: "lo", avatar: "LO", message: "the pad behind the hats is glowing", timestamp: "now" },
     { id: "a2", roomId: "ambient", username: "cass", avatar: "CA", message: "best room to disappear in", timestamp: "3m" }
   ],
-  hardgroove: [
-    { id: "h1", roomId: "hardgroove", username: "toma", avatar: "TO", message: "proper rolling pressure", timestamp: "now" },
-    { id: "h2", roomId: "hardgroove", username: "vera", avatar: "VE", message: "need the track id on this percussion", timestamp: "2m" }
-  ],
   "smoking-area": [
     { id: "s1", roomId: "smoking-area", username: "june", avatar: "JU", message: "came out here and the stream followed me", timestamp: "now" },
     { id: "s2", roomId: "smoking-area", username: "ori", avatar: "OR", message: "anyone else watching from a kitchen floor", timestamp: "4m" }
@@ -29,9 +25,9 @@ export const messagesByRoom: Record<string, ChatMessage[]> = {
     { id: "v1", roomId: "visuals-art", username: "anna", avatar: "AN", message: "camera grain is doing a lot of emotional labor", timestamp: "now" },
     { id: "v2", roomId: "visuals-art", username: "rue", avatar: "RU", message: "the white wash between cuts is perfect", timestamp: "5m" }
   ],
-  "producers-den": [
-    { id: "p1", roomId: "producers-den", username: "eon", avatar: "EO", message: "that delay send is tucked so low", timestamp: "now" },
-    { id: "p2", roomId: "producers-den", username: "mika", avatar: "MI", message: "sub has patience", timestamp: "2m" }
+  "producers-lair": [
+    { id: "p1", roomId: "producers-lair", username: "eon", avatar: "EO", message: "that delay send is tucked so low", timestamp: "now" },
+    { id: "p2", roomId: "producers-lair", username: "mika", avatar: "MI", message: "sub has patience", timestamp: "2m" }
   ],
   shitposting: [
     { id: "x1", roomId: "shitposting", username: "hex", avatar: "HX", message: "dj has the posture of a tax audit", timestamp: "now" },

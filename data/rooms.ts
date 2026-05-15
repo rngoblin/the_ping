@@ -27,32 +27,6 @@ export const rooms: Room[] = [
     vibe: 84
   },
   {
-    id: "ambient",
-    name: "ambient room",
-    description: "slow fog and sidechain pads",
-    mood: "slow / textural / low light",
-    tagline: "for fog and long attention",
-    accent: "#71807A",
-    tint: "rgba(113,128,122,0.2)",
-    densityLabel: "softly occupied",
-    symbol: "haze",
-    count: 214,
-    vibe: 48
-  },
-  {
-    id: "hardgroove",
-    name: "hardgroove",
-    description: "drums are doing the talking",
-    mood: "locked / percussive / forward",
-    tagline: "pressure without spectacle",
-    accent: "#66735D",
-    tint: "rgba(102,115,93,0.2)",
-    densityLabel: "high motion",
-    symbol: "grid",
-    count: 388,
-    vibe: 92
-  },
-  {
     id: "smoking-area",
     name: "smoking area",
     description: "half outside, half confession",
@@ -64,6 +38,19 @@ export const rooms: Room[] = [
     symbol: "side",
     count: 156,
     vibe: 55
+  },
+  {
+    id: "shitposting",
+    name: "shitposting",
+    description: "no context survives here",
+    mood: "loose / fast / unserious",
+    tagline: "a side room for pressure release",
+    accent: "#77715E",
+    tint: "rgba(119,113,94,0.2)",
+    densityLabel: "unstable but friendly",
+    symbol: "static",
+    count: 218,
+    vibe: 77
   },
   {
     id: "visuals-art",
@@ -79,9 +66,9 @@ export const rooms: Room[] = [
     vibe: 61
   },
   {
-    id: "producers-den",
-    name: "producer's den",
-    description: "kick chains, dub sends, notes",
+    id: "producers-lair",
+    name: "producer's lair",
+    description: "kick chains, dub sends",
     mood: "technical / generous / low voice",
     tagline: "small notes on large systems",
     accent: "#596F61",
@@ -92,16 +79,16 @@ export const rooms: Room[] = [
     vibe: 73
   },
   {
-    id: "shitposting",
-    name: "shitposting",
-    description: "no context survives here",
-    mood: "loose / fast / unserious",
-    tagline: "a side room for pressure release",
-    accent: "#77715E",
-    tint: "rgba(119,113,94,0.2)",
-    densityLabel: "unstable but friendly",
-    symbol: "static",
-    count: 218,
-    vibe: 77
+    id: "ambient",
+    name: "ambient room",
+    description: "slow fog and sidechain pads",
+    mood: "slow / textural / low light",
+    tagline: "for fog and long attention",
+    accent: "#71807A",
+    tint: "rgba(113,128,122,0.2)",
+    densityLabel: "softly occupied",
+    symbol: "haze",
+    count: 214,
+    vibe: 48
   }
 ];

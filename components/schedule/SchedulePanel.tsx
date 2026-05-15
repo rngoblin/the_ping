@@ -2,9 +2,24 @@
 
 import { CalendarDays } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
+import { EventCover } from "@/components/event/EventCover";
+
+const getCoverAccent = (genre: string) => {
+  if (/hardgroove|breakbeat|jungle/i.test(genre)) {
+    return "pink" as const;
+  }
+
+  if (/visual|experimental/i.test(genre)) {
+    return "mixed" as const;
+  }
+
+  return "green" as const;
+};
 
 export function SchedulePanel({ onOpenFullSchedule }: { onOpenFullSchedule: () => void }) {
   const schedule = usePingStore((state) => state.schedule);
+  const themeMode = usePingStore((state) => state.themeMode);
+  const coverTheme = themeMode === "night" ? "void" : "daylight";
   const previewSchedule = schedule.slice(0, 4);
 
   return (
@@ -17,17 +32,19 @@ export function SchedulePanel({ onOpenFullSchedule }: { onOpenFullSchedule: () =
         {previewSchedule.map((act) => (
           <button
             key={act.id}
-            className="w-full rounded-md border border-ping-black/10 bg-ping-bg/55 p-3 text-left transition hover:border-ping-accent/35 hover:bg-ping-bg"
+            className="group w-full rounded-md border border-ping-black/10 bg-ping-bg/55 p-2 text-left transition hover:border-ping-accent/35 hover:bg-ping-bg"
           >
-            <div className="mb-2 font-mono text-[10px] uppercase text-ping-accent">{act.time}</div>
-            <div className="text-sm font-medium">{act.title}</div>
-            <div className="mt-1 flex justify-between gap-3 text-xs text-ping-ink/50">
-              <span>{act.artist}</span>
-              <span>{act.city}</span>
-            </div>
-            <div className="mt-3 inline-flex rounded-full bg-ping-surface px-2.5 py-1 font-mono text-[10px] uppercase text-ping-ink/45">
-              {act.genre}
-            </div>
+            <EventCover
+              title={act.title}
+              artist={act.artist}
+              startsAt={act.time}
+              city={act.city}
+              genre={act.genre}
+              eventCode={act.id}
+              theme={coverTheme}
+              accent={getCoverAccent(act.genre)}
+              className="min-h-[11.25rem] border-ping-black/10 p-2 [--cover-ratio:16/10.5] [--cover-title-size:clamp(1.25rem,7.4cqw,1.85rem)] [--cover-title-width:15ch] sm:p-2"
+            />
           </button>
         ))}
       </div>

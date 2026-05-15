@@ -30,7 +30,7 @@ export function ChatPanel() {
       initial={{ opacity: 0.88 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.22 }}
-      className="chat-panel flex h-[58dvh] min-h-[21rem] flex-col overflow-hidden rounded-lg border border-ping-black/10 bg-ping-surface/80 shadow-line sm:h-[62dvh] sm:min-h-[24rem] lg:h-[34rem] lg:min-h-0 xl:h-[calc(100dvh-19rem)] xl:max-h-[42rem]"
+      className="chat-panel flex h-[58dvh] min-h-[21rem] flex-col overflow-hidden rounded-lg border border-ping-black/10 bg-ping-surface/80 shadow-line sm:h-[62dvh] sm:min-h-[24rem] lg:h-[44.75rem] lg:min-h-0 xl:h-[44.75rem] xl:max-h-[44.75rem]"
       style={activeRoom ? ({ "--active-room-tint": activeRoom.tint } as CSSProperties) : undefined}
     >
       <div className="flex items-start justify-between gap-3 border-b border-ping-black/10 px-4 py-3">

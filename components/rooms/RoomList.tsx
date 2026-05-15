@@ -9,12 +9,12 @@ export function RoomList() {
   const setActiveRoom = usePingStore((state) => state.setActiveRoom);
 
   return (
-    <section className="rounded-lg border border-ping-black/10 bg-ping-surface/80 p-3 shadow-line">
-      <div className="mb-3 flex items-center justify-between">
+    <section className="flex flex-col rounded-lg border border-ping-black/10 bg-ping-surface/80 p-3 shadow-line lg:h-[44.75rem]">
+      <div className="mb-3 flex shrink-0 items-center justify-between">
         <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/50">rooms</h2>
         <span className="font-mono text-[10px] uppercase text-ping-accent">{rooms.length} open</span>
       </div>
-      <div className="grid gap-1.5">
+      <div className="grid gap-2 lg:min-h-0 lg:flex-1 lg:grid-rows-6">
         {rooms.map((room) => {
           const isActive = activeRoomId === room.id;
           const presenceCount = presenceByRoom[room.id]?.count;
@@ -23,7 +23,7 @@ export function RoomList() {
             <button
               key={room.id}
               onClick={() => setActiveRoom(room.id)}
-              className={`rounded-md border px-3 py-2 text-left transition ${
+              className={`h-[6.35rem] min-h-0 rounded-md border px-3 py-3 text-left transition lg:h-full ${
                 isActive
                   ? "border-ping-accent/45 bg-ping-sage/70"
                   : "border-transparent bg-ping-bg/45 hover:border-ping-black/10 hover:bg-ping-bg"
@@ -36,8 +36,8 @@ export function RoomList() {
                 </span>
                 <span className="font-mono text-[10px] text-ping-ink/45">{presenceCount ?? room.count}</span>
               </div>
-              <p className="mt-1 truncate text-xs text-ping-ink/50">{room.description}</p>
-              <p className="mt-2 font-mono text-[10px] uppercase text-ping-ink/35">{room.tagline}</p>
+              <p className="mt-2 truncate text-xs text-ping-ink/50">{room.description}</p>
+              <p className="mt-2 truncate font-mono text-[10px] uppercase text-ping-ink/35">{room.tagline}</p>
             </button>
           );
         })}

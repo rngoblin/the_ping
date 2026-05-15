@@ -13,7 +13,6 @@ import { BottomSheet } from "@/components/shell/BottomSheet";
 import { MobileBottomNav } from "@/components/shell/MobileBottomNav";
 import { SchedulePanel } from "@/components/schedule/SchedulePanel";
 import { ScheduleDrawer } from "@/components/schedule/ScheduleDrawer";
-import { Sidebar } from "@/components/shell/Sidebar";
 import { TopStatus } from "@/components/shell/TopStatus";
 import { usePingStore } from "@/store/usePingStore";
 import { EntryGate } from "@/components/shell/EntryGate";
@@ -28,7 +27,6 @@ export function AppShell() {
   const hasHydratedSession = usePingStore((state) => state.hasHydratedSession);
   const localUser = usePingStore((state) => state.localUser);
   const featureFlags = usePingStore((state) => state.featureFlags);
-  const themeMode = usePingStore((state) => state.themeMode);
   const hydrateLocalSession = usePingStore((state) => state.hydrateLocalSession);
   const hydrateTheme = usePingStore((state) => state.hydrateTheme);
   const setRoomMessages = usePingStore((state) => state.setRoomMessages);
@@ -115,22 +113,14 @@ export function AppShell() {
       }
     >
       <div className="noise" />
-      <div className="relative z-10 flex min-h-dvh">
-        <Sidebar onOpenSchedule={openFullSchedule} />
-
-        <div className="mx-auto flex w-full max-w-[118rem] flex-1 flex-col">
-          <div className="safe-top sticky top-0 z-30 flex items-center justify-between border-b border-ping-black/10 bg-ping-bg/82 px-3 py-2.5 backdrop-blur-xl lg:hidden">
-            <div className="flex items-center gap-2.5">
-              <PingGlyph className="size-7" />
-              <PingWordmark compact />
-            </div>
-            <div className="font-mono text-[9px] uppercase text-ping-accent sm:text-[10px]">
-              {themeMode === "night" ? "void luminance" : "daylight afterhours"}
-            </div>
-          </div>
-
-          <div className="grid flex-1 gap-3 p-3 pb-[calc(5.25rem+env(safe-area-inset-bottom))] sm:gap-4 sm:p-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:grid-cols-[minmax(0,1fr)_22rem] xl:gap-5 xl:p-5">
+      <div className="relative z-10 min-h-dvh">
+        <div className="flex w-full flex-col">
+          <div className="grid flex-1 gap-3 p-3 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-[calc(5.25rem+env(safe-area-inset-bottom))] sm:gap-4 sm:p-4 sm:pt-[calc(1rem+env(safe-area-inset-top))] sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:grid-cols-[minmax(0,1fr)_24rem] xl:gap-4 xl:p-4 2xl:grid-cols-[minmax(0,1fr)_25rem]">
             <div className="min-w-0 space-y-4">
+              <div className="flex items-center justify-center gap-3 py-1 lg:justify-start">
+                <PingGlyph className="size-8" />
+                <PingWordmark compact />
+              </div>
               <TopStatus />
               <section id="live-section" className="scroll-mt-6">
                 <LivePlayer />
