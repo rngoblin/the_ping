@@ -9,6 +9,7 @@ import { eventConfig, type PingEvent } from "@/data/eventConfig";
 import { getRealtimeAdapter } from "@/services/realtime";
 import { mockRealtime } from "@/services/realtime/mockRealtime";
 import type { PresenceState, PresenceUser, ReactionInput } from "@/services/realtime/types";
+import { createSigilSeed } from "@/utils/generateSigil";
 
 export type ReactionPulse = {
   id: string;
@@ -27,6 +28,7 @@ export type LocalUserSession = {
   nickname: string;
   inviteCode?: string;
   avatarSeed: string;
+  sigilVariant?: number;
 };
 
 export type NotifyLead = {
@@ -59,7 +61,7 @@ type PingStore = {
   volume: number;
   mobilePanel: MobilePanel;
   hydrateLocalSession: () => void;
-  enterSession: (nickname: string, inviteCode?: string) => void;
+  enterSession: (nickname: string, inviteCode?: string, sigilVariant?: number) => void;
   resetIdentity: () => void;
   setActiveRoom: (roomId: string) => void;
   setActiveEvent: (eventId: string) => void;
@@ -96,10 +98,7 @@ const themeStorageKey = "ping.themeMode.v01";
 
 const activeEvent = eventConfig.events.find((event) => event.id === eventConfig.currentEventId) ?? eventConfig.events[0];
 
-const createAvatarSeed = (nickname: string) => {
-  const clean = nickname.trim().slice(0, 2).toUpperCase();
-  return clean || "??";
-};
+const createAvatarSeed = (nickname: string, sigilVariant = 0) => createSigilSeed(nickname, sigilVariant);
 
 const loadJson = <T,>(key: string, fallback: T): T => {
   if (typeof window === "undefined") {
@@ -165,7 +164,11 @@ export const usePingStore = create<PingStore>((set, get) => ({
   reactions: [],
   reactionCountsByRoom: {},
   presenceByRoom: {
-    "main-floor": { roomId: "main-floor", count: 642, avatars: ["SA", "NK", "ME", "LO", "VE", "JU", "AN"] }
+    "main-floor": {
+      roomId: "main-floor",
+      count: 642,
+      avatars: ["salma:0", "niko:1", "mei:2", "lo:0", "ve:1", "june:2", "anna:0"]
+    }
   },
   notifyLeads: [],
   themeMode: "daylight",
@@ -186,7 +189,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
     applyThemeMode(themeMode);
     set({ themeMode });
   },
-  enterSession: (nickname, inviteCode) => {
+  enterSession: (nickname, inviteCode, sigilVariant = 0) => {
     const cleanNickname = nickname.trim();
 
     if (!cleanNickname) {
@@ -197,7 +200,8 @@ export const usePingStore = create<PingStore>((set, get) => ({
       userId: createId(),
       nickname: cleanNickname,
       inviteCode: inviteCode?.trim() || undefined,
-      avatarSeed: createAvatarSeed(cleanNickname)
+      avatarSeed: createAvatarSeed(cleanNickname, sigilVariant),
+      sigilVariant
     };
 
     persistJson(sessionStorageKey, session);
@@ -221,7 +225,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
         [roomId]: {
           roomId,
           count: room?.count ?? 0,
-          avatars: ["SA", "NK", "ME", "LO", "VE", "JU", "AN"]
+          avatars: ["salma:0", "niko:1", "mei:2", "lo:0", "ve:1", "june:2", "anna:0"]
         }
       }
     }));
@@ -278,10 +282,16 @@ export const usePingStore = create<PingStore>((set, get) => ({
       return;
     }
 
-    set((state) => ({
-      reactions: [...state.reactions, reaction],
-      viewerCount: state.viewerCount + 1
-    }));
+    set((state) => {
+      if (state.reactions.some((item) => item.id === reaction.id)) {
+        return {};
+      }
+
+      return {
+        reactions: [...state.reactions, reaction],
+        viewerCount: state.viewerCount + 1
+      };
+    });
   },
   sendMessage: (message) => {
     const cleanMessage = message.trim();
@@ -294,7 +304,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
     const input = {
       userId: localUser?.userId ?? "local-only",
       nickname: localUser?.nickname ?? "you",
-      avatar: localUser?.avatarSeed ?? "YO",
+      avatar: localUser?.avatarSeed ?? createSigilSeed("you", 0),
       body: cleanMessage
     };
 
@@ -321,7 +331,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
     void getRealtimeAdapter().sendReaction(pulse).catch(() => mockRealtime.sendReaction(pulse));
 
     set((state) => ({
-      reactions: [...state.reactions, pulse],
+      reactions: state.reactions.some((reaction) => reaction.id === pulse.id) ? state.reactions : [...state.reactions, pulse],
       viewerCount: state.viewerCount + 1
     }));
   },

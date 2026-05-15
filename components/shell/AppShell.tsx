@@ -4,6 +4,7 @@ import { useEffect, useState, type CSSProperties } from "react";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { PingGlyph } from "@/components/brand/PingGlyph";
 import { PingWordmark } from "@/components/brand/PingWordmark";
+import { PixelSigil } from "@/components/identity/PixelSigil";
 import { LivePlayer } from "@/components/live/LivePlayer";
 import { ReactionBar } from "@/components/live/ReactionBar";
 import { RoomList } from "@/components/rooms/RoomList";
@@ -146,12 +147,12 @@ export function AppShell() {
               <section className="rounded-lg border border-ping-black/10 bg-ping-surface/80 p-4 shadow-line">
                 <h2 className="mb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/50">people here</h2>
                 <div className="flex -space-x-2">
-                  {(activePresence?.avatars.length ? activePresence.avatars : ["SA", "NK", "ME", "LO", "VE", "JU", "AN"]).map((avatar, index) => (
+                  {(activePresence?.avatars.length ? activePresence.avatars : ["salma:0", "niko:1", "mei:2", "lo:0", "ve:1", "june:2", "anna:0"]).map((avatar, index) => (
                     <div
                       key={`${avatar}-${index}`}
-                      className="grid size-9 place-items-center rounded-full border-2 border-ping-surface bg-ping-muted font-mono text-[10px] text-ping-ink/60"
+                      className="grid size-9 place-items-center rounded-md border-2 border-ping-surface bg-ping-muted/75 p-1 shadow-line"
                     >
-                      {avatar}
+                      <PixelSigil seed={avatar} className="size-full" title="presence signal sigil" />
                     </div>
                   ))}
                 </div>

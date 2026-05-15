@@ -1,10 +1,11 @@
 import type { ChatMessage as ChatMessageType } from "@/data/messages";
+import { PixelSigil } from "@/components/identity/PixelSigil";
 
 export function ChatMessage({ message }: { message: ChatMessageType }) {
   return (
     <article className="flex gap-3">
-      <div className="grid size-8 shrink-0 place-items-center rounded-full border border-ping-black/10 bg-ping-muted font-mono text-[10px] text-ping-ink/60">
-        {message.avatar}
+      <div className="grid size-8 shrink-0 place-items-center rounded-md border border-ping-black/10 bg-ping-muted/70 p-1 shadow-line">
+        <PixelSigil seed={message.avatar || message.username} className="size-full" title={`${message.username} signal sigil`} />
       </div>
       <div className="min-w-0 flex-1">
         <div className="mb-1 flex items-baseline gap-2">

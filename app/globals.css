@@ -457,6 +457,31 @@ button {
   box-shadow: 0 0 26px var(--pink-glow);
 }
 
+.pixel-sigil {
+  --sigil-green: #5e7a64;
+  --sigil-green-soft: #b7c2b2;
+  --sigil-pink: #ff6b8a;
+  image-rendering: pixelated;
+}
+
+:root[data-theme="night"] .pixel-sigil {
+  --sigil-green: #a8ff60;
+  --sigil-green-soft: #7fa287;
+  --sigil-pink: #ff5a7c;
+}
+
+.pixel-sigil .sigil-green {
+  fill: var(--sigil-green);
+}
+
+.pixel-sigil .sigil-greenSoft {
+  fill: var(--sigil-green-soft);
+}
+
+.pixel-sigil .sigil-pink {
+  fill: var(--sigil-pink);
+}
+
 @media (max-width: 640px) {
   .noise {
     opacity: 0.16;

@@ -12,6 +12,7 @@ import type {
   RoomMessageCallback,
   RoomMessageInput
 } from "@/services/realtime/types";
+import { createSigilSeed } from "@/utils/generateSigil";
 
 type MessageRow = {
   id: string;
@@ -43,10 +44,7 @@ const createId = () => {
   return `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 };
 
-const initials = (nickname: string) => {
-  const clean = nickname.trim().slice(0, 2).toUpperCase();
-  return clean || "??";
-};
+const fallbackAvatarSeed = (nickname: string) => createSigilSeed(nickname, 0);
 
 const relativeTimestamp = (createdAt: string) => {
   const created = new Date(createdAt);
@@ -69,7 +67,7 @@ const toChatMessage = (row: MessageRow): ChatMessage => ({
   id: row.id,
   roomId: row.room_id,
   username: row.nickname,
-  avatar: initials(row.nickname),
+  avatar: fallbackAvatarSeed(row.nickname),
   message: row.body,
   timestamp: relativeTimestamp(row.created_at)
 });
@@ -248,7 +246,10 @@ export const supabaseRealtime: RealtimeAdapter = {
       return broadcastMessage;
     }
 
-    const persistedMessage = toChatMessage(data as MessageRow);
+    const persistedMessage = {
+      ...toChatMessage(data as MessageRow),
+      avatar: input.avatar
+    };
     const channel = await getOrCreateMessageChannel(roomId);
     await channel?.send({
       type: "broadcast",
