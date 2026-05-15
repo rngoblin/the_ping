@@ -43,13 +43,15 @@ export const mockRealtime: RealtimeAdapter = {
     };
   },
   sendRoomMessage: async (roomId, input: RoomMessageInput) => {
+    const createdAt = new Date().toISOString();
     const newMessage: ChatMessage = {
       id: createId(),
       roomId,
       username: input.nickname,
       avatar: input.avatar,
       message: input.body,
-      timestamp: "now"
+      timestamp: "now",
+      createdAt
     };
 
     messageState[roomId] = [...(messageState[roomId] ?? []), newMessage];

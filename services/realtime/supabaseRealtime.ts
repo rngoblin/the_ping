@@ -60,7 +60,8 @@ const toChatMessage = (row: MessageRow): ChatMessage => ({
   username: row.nickname,
   avatar: row.avatar_seed || fallbackAvatarSeed(row.nickname),
   message: row.body,
-  timestamp: relativeTimestamp(row.created_at)
+  timestamp: relativeTimestamp(row.created_at),
+  createdAt: row.created_at
 });
 
 const toReaction = (row: ReactionRow): ReactionInput => ({

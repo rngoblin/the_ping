@@ -155,6 +155,19 @@ const dedupeMessages = (messages: ChatMessage[]) => {
   });
 };
 
+const messageTime = (message: ChatMessage) => {
+  if (!message.createdAt) {
+    return 0;
+  }
+
+  const time = new Date(message.createdAt).getTime();
+  return Number.isFinite(time) ? time : 0;
+};
+
+const sortMessagesChronologically = (messages: ChatMessage[]) => [...messages].sort((a, b) => messageTime(a) - messageTime(b));
+
+const mergeRoomMessages = (messages: ChatMessage[]) => sortMessagesChronologically(dedupeMessages(messages)).slice(-50);
+
 export const createPresenceUser = (session: LocalUserSession, roomId: string): PresenceUser => ({
   userId: session.userId,
   nickname: session.nickname,
@@ -284,13 +297,14 @@ export const usePingStore = create<PingStore>((set, get) => ({
       avatar: createSigilSeed("PING", 0),
       message: `${localUser.nickname} entered the room`,
       timestamp: "now",
+      createdAt: new Date(now).toISOString(),
       kind: "system"
     };
 
     set((state) => ({
       messagesByRoom: {
         ...state.messagesByRoom,
-        [nextRoomId]: dedupeMessages([...(state.messagesByRoom[nextRoomId] ?? []), systemMessage]).slice(-50)
+        [nextRoomId]: mergeRoomMessages([...(state.messagesByRoom[nextRoomId] ?? []), systemMessage])
       }
     }));
   },
@@ -345,7 +359,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
       return {
         messagesByRoom: {
           ...state.messagesByRoom,
-          [roomId]: dedupeMessages([...messages, ...systemMessages]).slice(-50)
+          [roomId]: mergeRoomMessages([...messages, ...systemMessages])
         }
       };
     }),
@@ -419,7 +433,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
         set((state) => ({
           messagesByRoom: {
             ...state.messagesByRoom,
-            [activeRoomId]: dedupeMessages([...(state.messagesByRoom[activeRoomId] ?? []), newMessage]).slice(-50)
+            [activeRoomId]: mergeRoomMessages([...(state.messagesByRoom[activeRoomId] ?? []), newMessage])
           }
         }));
       });

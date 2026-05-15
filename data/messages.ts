@@ -7,6 +7,7 @@ export type ChatMessage = {
   avatar: string;
   message: string;
   timestamp: string;
+  createdAt?: string;
   kind?: "user" | "system";
 };
 
