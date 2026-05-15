@@ -20,7 +20,7 @@ export function SchedulePanel({ onOpenFullSchedule }: { onOpenFullSchedule: () =
   const schedule = usePingStore((state) => state.schedule);
   const themeMode = usePingStore((state) => state.themeMode);
   const coverTheme = themeMode === "night" ? "void" : "daylight";
-  const previewSchedule = schedule.slice(0, 4);
+  const previewSchedule = schedule.slice(0, 3);
 
   return (
     <section className="rounded-lg border border-ping-black/10 bg-ping-surface/80 p-4 shadow-line">
