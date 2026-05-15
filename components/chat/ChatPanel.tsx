@@ -1,17 +1,24 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
 import { ChatInput } from "@/components/chat/ChatInput";
 import { ChatMessage } from "@/components/chat/ChatMessage";
+import type { ChatMessage as ChatMessageType } from "@/data/messages";
 import { usePingStore } from "@/store/usePingStore";
+
+const emptyMessages: ChatMessageType[] = [];
 
 export function ChatPanel() {
   const rooms = usePingStore((state) => state.rooms);
   const activeRoomId = usePingStore((state) => state.activeRoomId);
   const hiddenMessageIds = usePingStore((state) => state.hiddenMessageIds);
-  const messages = usePingStore((state) => (state.messagesByRoom[activeRoomId] ?? []).filter((message) => !hiddenMessageIds.includes(message.id)));
+  const roomMessages = usePingStore((state) => state.messagesByRoom[activeRoomId] ?? emptyMessages);
+  const messages = useMemo(
+    () => roomMessages.filter((message) => !hiddenMessageIds.includes(message.id)),
+    [hiddenMessageIds, roomMessages]
+  );
   const activeRoom = rooms.find((room) => room.id === activeRoomId);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
