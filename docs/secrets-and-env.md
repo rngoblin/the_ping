@@ -31,6 +31,7 @@ Important:
 - `NEXT_PUBLIC_*` values are visible in the browser.
 - Use a browser-safe Supabase Publishable key (`sb_publishable_...`) when available.
 - Legacy anon keys are also browser-safe, but publishable keys are preferred for new deploys.
+- `NEXT_PUBLIC_SUPABASE_URL` must look like `https://your-project.supabase.co`; do not paste a publishable key into the URL field.
 - Do not place private/secret API keys in this app while it is hosted as static GitHub Pages.
 - The GitHub Pages workflow refuses to build if the browser key starts with `sb_secret`.
 - The frontend does not include hardcoded Supabase fallback keys. Configure deploy env vars before a real test night.

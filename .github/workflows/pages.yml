@@ -46,6 +46,11 @@ jobs:
           set -euo pipefail
           SUPABASE_URL="${SUPABASE_URL_SECRET:-${SUPABASE_URL_VAR:-$DEFAULT_SUPABASE_URL}}"
 
+          if [[ ! "$SUPABASE_URL" =~ ^https://.+\.supabase\.co$ ]]; then
+            echo "::warning::NEXT_PUBLIC_SUPABASE_URL does not look like a Supabase project URL. Falling back to the current public PING test project URL."
+            SUPABASE_URL="$DEFAULT_SUPABASE_URL"
+          fi
+
           if [[ "$SUPABASE_PUBLISHABLE_KEY" == sb_secret* || "$SUPABASE_ANON_KEY" == sb_secret* ]]; then
             echo "::error::Refusing to expose a Supabase secret key in the browser bundle. Use NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY."
             exit 1

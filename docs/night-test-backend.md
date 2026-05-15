@@ -43,6 +43,8 @@ NEXT_PUBLIC_FEEDBACK_URL=...
 
 Use a browser-safe Supabase Publishable key (`sb_publishable_...`) when available. Legacy anon keys are also browser-safe, but publishable keys are preferred for new deploys. Anything prefixed `NEXT_PUBLIC_` is bundled into the browser. Do not put private secret/service-role keys in this frontend.
 
+`NEXT_PUBLIC_SUPABASE_URL` should be the project URL, for example `https://your-project.supabase.co`. Do not paste a publishable/anon key into the URL field.
+
 The host/debug panel shows whether the deployed app is actually using Supabase or has fallen back to mock realtime.
 
 ## 3. Run Locally
