@@ -10,7 +10,8 @@ import { usePingStore } from "@/store/usePingStore";
 export function ChatPanel() {
   const rooms = usePingStore((state) => state.rooms);
   const activeRoomId = usePingStore((state) => state.activeRoomId);
-  const messages = usePingStore((state) => state.messagesByRoom[activeRoomId] ?? []);
+  const hiddenMessageIds = usePingStore((state) => state.hiddenMessageIds);
+  const messages = usePingStore((state) => (state.messagesByRoom[activeRoomId] ?? []).filter((message) => !hiddenMessageIds.includes(message.id)));
   const activeRoom = rooms.find((room) => room.id === activeRoomId);
   const scrollRef = useRef<HTMLDivElement | null>(null);
 

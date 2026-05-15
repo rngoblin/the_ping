@@ -41,16 +41,30 @@ create table if not exists public.announcements (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.moderation_actions (
+  id uuid primary key default gen_random_uuid(),
+  event_id text not null,
+  room_id text not null,
+  action text not null check (action in ('hide_message', 'ban_user')),
+  target_user_id text not null,
+  target_nickname text,
+  target_message_id text,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists messages_room_created_idx on public.messages (room_id, created_at desc);
 create index if not exists reactions_created_idx on public.reactions (created_at desc);
 create index if not exists notify_leads_created_idx on public.notify_leads (created_at desc);
 create index if not exists announcements_event_created_idx on public.announcements (event_id, created_at desc);
+create index if not exists moderation_actions_event_created_idx on public.moderation_actions (event_id, created_at desc);
+create index if not exists moderation_actions_target_user_idx on public.moderation_actions (target_user_id, created_at desc);
 
 alter table public.messages enable row level security;
 alter table public.reactions enable row level security;
 alter table public.notify_leads enable row level security;
 alter table public.event_state enable row level security;
 alter table public.announcements enable row level security;
+alter table public.moderation_actions enable row level security;
 
 drop policy if exists "anon can read messages" on public.messages;
 create policy "anon can read messages"
@@ -132,6 +146,24 @@ with check (
   and length(trim(body)) between 1 and 280
 );
 
+drop policy if exists "anon can read moderation actions" on public.moderation_actions;
+create policy "anon can read moderation actions"
+on public.moderation_actions for select
+to anon
+using (true);
+
+drop policy if exists "anon can insert moderation actions for closed test" on public.moderation_actions;
+create policy "anon can insert moderation actions for closed test"
+on public.moderation_actions for insert
+to anon
+with check (
+  length(trim(event_id)) > 0
+  and length(trim(room_id)) > 0
+  and action in ('hide_message', 'ban_user')
+  and length(trim(target_user_id)) > 0
+  and (target_message_id is null or length(trim(target_message_id)) > 0)
+);
+
 -- After running this file, enable Realtime for public.messages, public.reactions,
--- public.event_state, and public.announcements
+-- public.event_state, public.announcements, and public.moderation_actions
 -- in Supabase Dashboard > Database > Replication if they are not already enabled.

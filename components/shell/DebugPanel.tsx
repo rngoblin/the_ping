@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Copy, Trash2, X } from "lucide-react";
+import { Ban, Copy, EyeOff, Trash2, X } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 import type { LiveStatus, StreamType } from "@/data/currentLive";
 import { getRealtimeProviderName } from "@/services/realtime";
 import { getSupabaseRuntimeStatus } from "@/services/supabase/client";
 import { saveHostEventState, sendHostAnnouncement, type HostEventState } from "@/services/host/hostControls";
+import { createModerationAction } from "@/services/host/moderation";
 
 export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const events = usePingStore((state) => state.events);
@@ -16,6 +17,12 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const localUser = usePingStore((state) => state.localUser);
   const notifyLeads = usePingStore((state) => state.notifyLeads);
   const activeRoomId = usePingStore((state) => state.activeRoomId);
+  const presenceByRoom = usePingStore((state) => state.presenceByRoom);
+  const messagesByRoom = usePingStore((state) => state.messagesByRoom);
+  const hiddenMessageIds = usePingStore((state) => state.hiddenMessageIds);
+  const bannedUserIds = usePingStore((state) => state.bannedUserIds);
+  const moderationActions = usePingStore((state) => state.moderationActions);
+  const applyModerationAction = usePingStore((state) => state.applyModerationAction);
   const viewerCount = usePingStore((state) => state.viewerCount);
   const setActiveEvent = usePingStore((state) => state.setActiveEvent);
   const setLiveStatus = usePingStore((state) => state.setLiveStatus);
@@ -27,6 +34,8 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const [announcementBody, setAnnouncementBody] = useState("");
   const [hostSaveLabel, setHostSaveLabel] = useState("save live state");
   const [announcementLabel, setAnnouncementLabel] = useState("send announcement");
+  const [selectedModerationUserId, setSelectedModerationUserId] = useState("");
+  const [moderationLabel, setModerationLabel] = useState("");
 
   const currentHostState = useMemo<HostEventState>(
     () => ({
@@ -47,11 +56,32 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
     [currentLive]
   );
 
+  const activePresence = presenceByRoom[activeRoomId];
+  const onlineUsers = useMemo(() => {
+    const users = activePresence?.users ?? [];
+    const fallback = localUser ? [{ userId: localUser.userId, nickname: localUser.nickname, avatar: localUser.avatarSeed, roomId: activeRoomId, joinedAt: localUser.enteredAt ?? "" }] : [];
+    const byId = new Map([...users, ...fallback].map((user) => [user.userId, user]));
+    return [...byId.values()];
+  }, [activePresence?.users, activeRoomId, localUser]);
+  const selectedUser = onlineUsers.find((user) => user.userId === selectedModerationUserId);
+  const activeRoomMessages = messagesByRoom[activeRoomId] ?? [];
+  const latestSelectedUserMessage = selectedUser
+    ? [...activeRoomMessages]
+        .reverse()
+        .find((message) => message.userId === selectedUser.userId && message.kind !== "system" && !hiddenMessageIds.includes(message.id))
+    : undefined;
+
   useEffect(() => {
     if (isOpen) {
       setHostState(currentHostState);
     }
   }, [currentHostState, isOpen]);
+
+  useEffect(() => {
+    if (!selectedModerationUserId && onlineUsers[0]) {
+      setSelectedModerationUserId(onlineUsers[0].userId);
+    }
+  }, [onlineUsers, selectedModerationUserId]);
 
   if (!isOpen) {
     return null;
@@ -104,6 +134,38 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
         console.warn("PING announcement send failed", error.message);
         setAnnouncementLabel("send failed");
         window.setTimeout(() => setAnnouncementLabel("send announcement"), 1600);
+      });
+  };
+
+  const runModerationAction = (mode: "hide_message" | "ban_user") => {
+    if (!selectedUser) {
+      return;
+    }
+
+    if (mode === "hide_message" && !latestSelectedUserMessage) {
+      setModerationLabel("no visible message");
+      window.setTimeout(() => setModerationLabel(""), 1400);
+      return;
+    }
+
+    setModerationLabel(mode === "hide_message" ? "hiding..." : "banning...");
+    void createModerationAction({
+      eventId: activeEventId,
+      roomId: activeRoomId,
+      action: mode,
+      targetUserId: selectedUser.userId,
+      targetNickname: selectedUser.nickname,
+      targetMessageId: mode === "hide_message" ? latestSelectedUserMessage?.id : undefined
+    })
+      .then((action) => {
+        applyModerationAction(action);
+        setModerationLabel(mode === "hide_message" ? "message hidden" : "user banned");
+        window.setTimeout(() => setModerationLabel(""), 1400);
+      })
+      .catch((error: Error) => {
+        console.warn("PING moderation action failed", error.message);
+        setModerationLabel("moderation failed");
+        window.setTimeout(() => setModerationLabel(""), 1600);
       });
   };
 
@@ -243,6 +305,64 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
           <button onClick={sendAnnouncement} className="mt-2 w-full rounded-full border border-ping-bg/15 px-3 py-2 text-sm text-ping-bg/80">
             {announcementLabel}
           </button>
+        </section>
+
+        <section className="rounded-lg border border-ping-bg/10 p-3">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <p className="font-mono text-[10px] uppercase text-ping-bg/45">moderation</p>
+            <span className="font-mono text-[10px] uppercase text-ping-bg/35">{activeRoomId}</span>
+          </div>
+          <label className="block">
+            <span className="mb-1 block font-mono text-[10px] uppercase text-ping-bg/40">online user</span>
+            <select
+              value={selectedModerationUserId}
+              onChange={(event) => setSelectedModerationUserId(event.target.value)}
+              className="h-10 w-full rounded-md border border-ping-bg/15 bg-ping-bg/10 px-3 text-sm text-ping-bg"
+            >
+              {onlineUsers.length ? (
+                onlineUsers.map((user) => (
+                  <option key={user.userId} value={user.userId} className="text-ping-black">
+                    {user.nickname} {bannedUserIds.includes(user.userId) ? "/ banned" : ""}
+                  </option>
+                ))
+              ) : (
+                <option value="" className="text-ping-black">
+                  no online users
+                </option>
+              )}
+            </select>
+          </label>
+          <div className="mt-3 rounded-md border border-ping-bg/10 bg-ping-bg/5 p-2">
+            <p className="font-mono text-[10px] uppercase text-ping-bg/35">latest visible message</p>
+            <p className="mt-1 line-clamp-3 text-xs leading-relaxed text-ping-bg/65">
+              {latestSelectedUserMessage ? latestSelectedUserMessage.message : "no message from selected user in this room"}
+            </p>
+          </div>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              onClick={() => runModerationAction("hide_message")}
+              disabled={!selectedUser || !latestSelectedUserMessage}
+              className="flex items-center justify-center gap-2 rounded-full border border-ping-bg/15 px-3 py-2 text-sm text-ping-bg/80 disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              <EyeOff size={14} />
+              delete
+            </button>
+            <button
+              onClick={() => runModerationAction("ban_user")}
+              disabled={!selectedUser || Boolean(selectedUser && bannedUserIds.includes(selectedUser.userId))}
+              className="flex items-center justify-center gap-2 rounded-full border border-ping-softPink/35 px-3 py-2 text-sm text-ping-softPink disabled:cursor-not-allowed disabled:opacity-35"
+            >
+              <Ban size={14} />
+              ban
+            </button>
+          </div>
+          <p className="mt-2 min-h-4 font-mono text-[10px] uppercase text-ping-bg/40">{moderationLabel}</p>
+          <p className="mt-2 text-xs leading-relaxed text-ping-bg/35">
+            Test-safe moderation: delete hides one message everywhere; ban blocks future chat and reactions for that local identity.
+          </p>
+          <p className="mt-2 font-mono text-[10px] uppercase text-ping-bg/35">
+            {moderationActions.length} moderation actions
+          </p>
         </section>
 
         <section className="rounded-lg border border-ping-bg/10 p-3">

@@ -16,6 +16,7 @@ Goal: run a 5-30 person test where people enter with a nickname, watch/listen to
   - `reactions`
   - `event_state`
   - `announcements`
+  - `moderation_actions`
 - Open PING on two devices with different nicknames.
 - Send a message in `main floor`; refresh both devices; confirm it persists.
 - Send reactions from both devices; confirm pulses appear and the counter updates.
@@ -47,6 +48,7 @@ Start:
 During:
 - Watch chat persistence and reaction sync.
 - Use announcements for delays, source changes, or ending notes.
+- Use moderation only when needed: select an online user, hide their latest message, or mute their local identity for the test.
 - Keep a manual note of bugs with device/browser.
 
 End:

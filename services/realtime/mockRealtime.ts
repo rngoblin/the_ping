@@ -47,6 +47,7 @@ export const mockRealtime: RealtimeAdapter = {
     const newMessage: ChatMessage = {
       id: createId(),
       roomId,
+      userId: input.userId,
       username: input.nickname,
       avatar: input.avatar,
       message: input.body,

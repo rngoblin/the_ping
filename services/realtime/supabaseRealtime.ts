@@ -57,6 +57,7 @@ const relativeTimestamp = (createdAt: string) => {
 const toChatMessage = (row: MessageRow): ChatMessage => ({
   id: row.id,
   roomId: row.room_id,
+  userId: row.user_id,
   username: row.nickname,
   avatar: row.avatar_seed || fallbackAvatarSeed(row.nickname),
   message: row.body,

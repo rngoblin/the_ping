@@ -13,11 +13,13 @@ Goal: 5-20 invited people can enter with a nickname, share one stream, chat in r
    - `notify_leads`
    - `event_state`
    - `announcements`
+   - `moderation_actions`
 5. In Database > Realtime, confirm Realtime is enabled for:
    - `messages`
    - `reactions`
    - `event_state`
    - `announcements`
+   - `moderation_actions`
 
 The setup SQL is intentionally data-safe: it creates missing tables and indexes, enables RLS, and refreshes policies. Supabase may warn about destructive operations because the script drops and recreates policies, but it does not drop tables or delete existing rows.
 
@@ -28,6 +30,7 @@ RLS is intentionally permissive for a closed night test:
 - anon can select notify leads for host export/debug
 - anon can select and upsert the current host-controlled event state
 - anon can select and insert host announcements
+- anon can select and insert moderation actions for closed-test host tools
 - no update/delete policies are created
 
 ## 2. Local Env
@@ -75,6 +78,8 @@ If env vars are missing, PING falls back to mock realtime and still loads.
 13. Confirm the contact appears in Supabase `notify_leads`.
 14. Open the host panel, change the live state, and confirm the other window updates.
 15. Send a host announcement and confirm the other window sees it.
+16. In the host panel, select an online user, hide their latest message, and confirm the message disappears in the other window.
+17. Ban the selected test user and confirm their chat input becomes muted.
 
 ## 5. Deploy To GitHub Pages
 

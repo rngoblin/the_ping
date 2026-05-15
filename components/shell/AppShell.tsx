@@ -23,6 +23,7 @@ import { DebugPanel } from "@/components/shell/DebugPanel";
 import { getRealtimeAdapter } from "@/services/realtime";
 import { createPresenceUser } from "@/store/usePingStore";
 import { subscribeToHostAnnouncement, subscribeToHostEventState } from "@/services/host/hostControls";
+import { subscribeToModerationActions } from "@/services/host/moderation";
 
 export function AppShell() {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -38,6 +39,7 @@ export function AppShell() {
   const setActiveAnnouncement = usePingStore((state) => state.setActiveAnnouncement);
   const setRoomMessages = usePingStore((state) => state.setRoomMessages);
   const setRoomPresence = usePingStore((state) => state.setRoomPresence);
+  const setModerationActions = usePingStore((state) => state.setModerationActions);
   const setReactionCount = usePingStore((state) => state.setReactionCount);
   const receiveReaction = usePingStore((state) => state.receiveReaction);
   const rooms = usePingStore((state) => state.rooms);
@@ -111,12 +113,14 @@ export function AppShell() {
   useEffect(() => {
     const unsubscribeEventState = subscribeToHostEventState(activeEventId, applyHostEventState);
     const unsubscribeAnnouncement = subscribeToHostAnnouncement(activeEventId, setActiveAnnouncement);
+    const unsubscribeModeration = subscribeToModerationActions(activeEventId, setModerationActions);
 
     return () => {
       unsubscribeEventState();
       unsubscribeAnnouncement();
+      unsubscribeModeration();
     };
-  }, [activeEventId, applyHostEventState, setActiveAnnouncement]);
+  }, [activeEventId, applyHostEventState, setActiveAnnouncement, setModerationActions]);
 
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {

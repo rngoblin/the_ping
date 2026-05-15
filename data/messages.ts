@@ -3,6 +3,7 @@ import { createSigilSeed } from "@/utils/generateSigil";
 export type ChatMessage = {
   id: string;
   roomId: string;
+  userId?: string;
   username: string;
   avatar: string;
   message: string;

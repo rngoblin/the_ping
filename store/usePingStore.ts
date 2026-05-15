@@ -10,6 +10,7 @@ import { getRealtimeAdapter, getRealtimeProviderName } from "@/services/realtime
 import { mockRealtime } from "@/services/realtime/mockRealtime";
 import type { PresenceState, PresenceUser, ReactionInput } from "@/services/realtime/types";
 import type { HostAnnouncement, HostEventState } from "@/services/host/hostControls";
+import type { ModerationAction } from "@/services/host/moderation";
 import { createThrottle, isChatMessageAllowed, isNicknameAllowed, normalizeChatMessage, normalizeNickname } from "@/utils/launchGuards";
 import { createSigilSeed } from "@/utils/generateSigil";
 
@@ -55,6 +56,9 @@ type PingStore = {
   rooms: typeof rooms;
   schedule: ScheduleAct[];
   messagesByRoom: Record<string, ChatMessage[]>;
+  moderationActions: ModerationAction[];
+  hiddenMessageIds: string[];
+  bannedUserIds: string[];
   reactions: ReactionPulse[];
   reactionCountsByRoom: Record<string, number>;
   presenceByRoom: Record<string, PresenceState>;
@@ -76,6 +80,8 @@ type PingStore = {
   applyHostEventState: (state: HostEventState | null) => void;
   setActiveAnnouncement: (announcement: HostAnnouncement | null) => void;
   setRoomMessages: (roomId: string, messages: ChatMessage[]) => void;
+  setModerationActions: (actions: ModerationAction[]) => void;
+  applyModerationAction: (action: ModerationAction) => void;
   setRoomPresence: (roomId: string, presence: PresenceState) => void;
   setReactionCount: (roomId: string, count: number) => void;
   receiveReaction: (reaction: ReactionInput) => void;
@@ -168,6 +174,11 @@ const sortMessagesChronologically = (messages: ChatMessage[]) => [...messages].s
 
 const mergeRoomMessages = (messages: ChatMessage[]) => sortMessagesChronologically(dedupeMessages(messages)).slice(-50);
 
+const deriveModerationState = (actions: ModerationAction[]) => ({
+  hiddenMessageIds: actions.map((action) => action.targetMessageId).filter((id): id is string => Boolean(id)),
+  bannedUserIds: [...new Set(actions.filter((action) => action.action === "ban_user").map((action) => action.targetUserId))]
+});
+
 export const createPresenceUser = (session: LocalUserSession, roomId: string): PresenceUser => ({
   userId: session.userId,
   nickname: session.nickname,
@@ -189,6 +200,9 @@ export const usePingStore = create<PingStore>((set, get) => ({
   rooms: rooms.filter((room) => activeEvent.enabledRoomIds.includes(room.id)),
   schedule: activeEvent.schedule,
   messagesByRoom: initialMessages,
+  moderationActions: [],
+  hiddenMessageIds: [],
+  bannedUserIds: [],
   reactions: [],
   reactionCountsByRoom: {},
   presenceByRoom: {
@@ -363,6 +377,20 @@ export const usePingStore = create<PingStore>((set, get) => ({
         }
       };
     }),
+  setModerationActions: (actions) =>
+    set(() => ({
+      moderationActions: actions,
+      ...deriveModerationState(actions)
+    })),
+  applyModerationAction: (action) =>
+    set((state) => {
+      const actions = state.moderationActions.some((item) => item.id === action.id) ? state.moderationActions : [...state.moderationActions, action];
+
+      return {
+        moderationActions: actions,
+        ...deriveModerationState(actions)
+      };
+    }),
   setRoomPresence: (roomId, presence) =>
     set((state) => ({
       presenceByRoom: {
@@ -395,16 +423,21 @@ export const usePingStore = create<PingStore>((set, get) => ({
   },
   sendMessage: (message) => {
     const cleanMessage = normalizeChatMessage(message);
+    const localUser = get().localUser;
 
     if (!isChatMessageAllowed(cleanMessage)) {
       return;
     }
 
-    if (!canSendChatMessage(get().localUser?.userId ?? "local-only")) {
+    if (localUser && get().bannedUserIds.includes(localUser.userId)) {
       return;
     }
 
-    const { activeRoomId, localUser } = get();
+    if (!canSendChatMessage(localUser?.userId ?? "local-only")) {
+      return;
+    }
+
+    const { activeRoomId } = get();
     const input = {
       userId: localUser?.userId ?? "local-only",
       nickname: localUser?.nickname ?? "you",
@@ -441,6 +474,10 @@ export const usePingStore = create<PingStore>((set, get) => ({
   addReaction: (emoji) => {
     const { activeRoomId, localUser } = get();
     const userId = localUser?.userId ?? "local-only";
+
+    if (localUser && get().bannedUserIds.includes(localUser.userId)) {
+      return;
+    }
 
     if (!canSendReaction(`${userId}:${activeRoomId}`)) {
       return;
