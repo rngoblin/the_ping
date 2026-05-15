@@ -38,10 +38,12 @@ jobs:
           REPO_NAME: ${{ github.event.repository.name }}
           SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
+          SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          FEEDBACK_URL: ${{ vars.NEXT_PUBLIC_FEEDBACK_URL }}
         run: |
           set -euo pipefail
 
-          if [[ "$SUPABASE_PUBLISHABLE_KEY" == sb_secret* ]]; then
+          if [[ "$SUPABASE_PUBLISHABLE_KEY" == sb_secret* || "$SUPABASE_ANON_KEY" == sb_secret* ]]; then
             echo "::error::Refusing to expose a Supabase secret key in the browser bundle. Use NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY."
             exit 1
           fi
@@ -50,6 +52,8 @@ jobs:
             echo "NEXT_PUBLIC_BASE_PATH=/$REPO_NAME"
             echo "NEXT_PUBLIC_SUPABASE_URL=$SUPABASE_URL"
             echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY"
+            echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
+            echo "NEXT_PUBLIC_FEEDBACK_URL=$FEEDBACK_URL"
           } >> "$GITHUB_ENV"
 
       - name: Build static site

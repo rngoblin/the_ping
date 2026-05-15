@@ -12,5 +12,6 @@ export const liveTestConfig = {
   embedUrl: "https://www.youtube.com/embed/jP0A9mzR3pM?autoplay=1&mute=1&loop=1&playlist=jP0A9mzR3pM&playsinline=1&controls=0&rel=0&modestbranding=1&iv_load_policy=3&disablekb=1&fs=0",
   status: "live" as LiveStatus,
   startsAt: "tonight / 03:17 local",
+  feedbackUrl: process.env.NEXT_PUBLIC_FEEDBACK_URL || "https://github.com/rngoblin/the_ping/issues/new",
   schedule
 };

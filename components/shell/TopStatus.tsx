@@ -4,7 +4,7 @@ import { Menu, Radio, Settings2 } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 import { ThemeSwitch } from "@/components/shell/ThemeSwitch";
 
-export function TopStatus() {
+export function TopStatus({ onOpenHostPanel }: { onOpenHostPanel?: () => void }) {
   const viewerCount = usePingStore((state) => state.viewerCount);
 
   return (
@@ -21,10 +21,20 @@ export function TopStatus() {
       </div>
       <div className="flex items-center gap-2">
         <ThemeSwitch compact />
-        <button className="hidden size-9 place-items-center rounded-full border border-ping-black/10 bg-ping-surface transition hover:bg-ping-muted sm:grid" aria-label="Settings" title="Settings">
+        <button
+          onClick={onOpenHostPanel}
+          className="hidden size-9 place-items-center rounded-full border border-ping-black/10 bg-ping-surface transition hover:bg-ping-muted sm:grid"
+          aria-label="Open host panel"
+          title="Host panel"
+        >
           <Settings2 size={16} />
         </button>
-        <button className="grid size-9 place-items-center rounded-full border border-ping-black/10 bg-ping-surface transition hover:bg-ping-muted lg:hidden" aria-label="Menu" title="Menu">
+        <button
+          onClick={onOpenHostPanel}
+          className="grid size-9 place-items-center rounded-full border border-ping-black/10 bg-ping-surface transition hover:bg-ping-muted lg:hidden"
+          aria-label="Open host panel"
+          title="Host panel"
+        >
           <Menu size={17} />
         </button>
       </div>

@@ -21,6 +21,7 @@ import { LoadingState } from "@/components/shell/LoadingState";
 import { DebugPanel } from "@/components/shell/DebugPanel";
 import { getRealtimeAdapter } from "@/services/realtime";
 import { createPresenceUser } from "@/store/usePingStore";
+import { subscribeToHostAnnouncement, subscribeToHostEventState } from "@/services/host/hostControls";
 
 export function AppShell() {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -28,18 +29,24 @@ export function AppShell() {
   const hasHydratedSession = usePingStore((state) => state.hasHydratedSession);
   const localUser = usePingStore((state) => state.localUser);
   const featureFlags = usePingStore((state) => state.featureFlags);
+  const activeAnnouncement = usePingStore((state) => state.activeAnnouncement);
   const hydrateLocalSession = usePingStore((state) => state.hydrateLocalSession);
   const hydrateTheme = usePingStore((state) => state.hydrateTheme);
+  const applyHostEventState = usePingStore((state) => state.applyHostEventState);
+  const setActiveAnnouncement = usePingStore((state) => state.setActiveAnnouncement);
   const setRoomMessages = usePingStore((state) => state.setRoomMessages);
   const setRoomPresence = usePingStore((state) => state.setRoomPresence);
   const setReactionCount = usePingStore((state) => state.setReactionCount);
   const receiveReaction = usePingStore((state) => state.receiveReaction);
   const rooms = usePingStore((state) => state.rooms);
+  const events = usePingStore((state) => state.events);
+  const activeEventId = usePingStore((state) => state.activeEventId);
   const activeRoomId = usePingStore((state) => state.activeRoomId);
   const presenceByRoom = usePingStore((state) => state.presenceByRoom);
   const mobilePanel = usePingStore((state) => state.mobilePanel);
   const setMobilePanel = usePingStore((state) => state.setMobilePanel);
   const activeRoom = rooms.find((room) => room.id === activeRoomId) ?? rooms[0];
+  const activeEvent = events.find((event) => event.id === activeEventId);
   const activePresence = presenceByRoom[activeRoomId];
   const openFullSchedule = () => {
     setMobilePanel("none");
@@ -80,8 +87,21 @@ export function AppShell() {
   }, [receiveReaction]);
 
   useEffect(() => {
+    const unsubscribeEventState = subscribeToHostEventState(activeEventId, applyHostEventState);
+    const unsubscribeAnnouncement = subscribeToHostAnnouncement(activeEventId, setActiveAnnouncement);
+
+    return () => {
+      unsubscribeEventState();
+      unsubscribeAnnouncement();
+    };
+  }, [activeEventId, applyHostEventState, setActiveAnnouncement]);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.shiftKey && event.key.toLowerCase() === "d" && featureFlags.enableDebugPanel) {
+      const key = event.key.toLowerCase();
+
+      if (event.shiftKey && (key === "d" || event.code === "KeyD") && featureFlags.enableDebugPanel) {
+        event.preventDefault();
         setIsDebugOpen((value) => !value);
       }
     };
@@ -122,7 +142,14 @@ export function AppShell() {
                 <PingGlyph className="size-8" />
                 <PingWordmark compact />
               </div>
-              <TopStatus />
+              <TopStatus onOpenHostPanel={featureFlags.enableDebugPanel ? () => setIsDebugOpen(true) : undefined} />
+              {activeAnnouncement ? (
+                <aside className="rounded-md border border-ping-pink/20 bg-ping-softPink/10 px-4 py-3 font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-ping-ink/65">
+                  <span className="text-ping-pink">host signal</span>
+                  <span className="mx-2 text-ping-ink/25">/</span>
+                  {activeAnnouncement.body}
+                </aside>
+              ) : null}
               <section id="live-section" className="scroll-mt-6">
                 <LivePlayer />
               </section>
@@ -181,8 +208,20 @@ export function AppShell() {
           onClick={() => setIsDebugOpen(true)}
           aria-label="Open host panel"
           title="Host panel"
-          className="fixed bottom-2 right-2 z-30 size-3 rounded-full bg-ping-black/10 opacity-30 transition hover:opacity-80"
-        />
+          className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] right-3 z-40 rounded-full border border-ping-black/10 bg-ping-surface/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-ping-ink/45 shadow-line backdrop-blur transition hover:border-ping-accent/40 hover:text-ping-accent lg:bottom-3"
+        >
+          host
+        </button>
+      ) : null}
+      {activeEvent?.feedbackUrl ? (
+        <a
+          href={activeEvent.feedbackUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 z-40 rounded-full border border-ping-black/10 bg-ping-surface/90 px-3 py-1.5 font-mono text-[9px] uppercase tracking-[0.16em] text-ping-ink/45 shadow-line backdrop-blur transition hover:border-ping-pink/35 hover:text-ping-pink lg:bottom-3"
+        >
+          leave feedback
+        </a>
       ) : null}
     </main>
   );

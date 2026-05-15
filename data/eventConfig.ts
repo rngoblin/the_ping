@@ -19,6 +19,7 @@ export type PingEvent = {
   name: string;
   subtitle: string;
   dateLabel: string;
+  feedbackUrl?: string;
   themeVariant: ThemeVariant;
   currentLive: typeof currentLive;
   enabledRoomIds: string[];
@@ -40,6 +41,7 @@ export const testEvents: PingEvent[] = [
     name: "Field Notes After Dawn",
     subtitle: "one shared stream from a quiet room after sunrise",
     dateLabel: "test night / this week",
+    feedbackUrl: liveTestConfig.feedbackUrl,
     themeVariant: "daylight-afterhours",
     currentLive: {
       ...currentLive,
@@ -61,6 +63,7 @@ export const testEvents: PingEvent[] = [
     name: "Slow Signal Preview",
     subtitle: "a softer room for testing starting soon state",
     dateLabel: "tomorrow 02:00",
+    feedbackUrl: liveTestConfig.feedbackUrl,
     themeVariant: "daylight-afterhours",
     currentLive: {
       ...currentLive,
@@ -90,6 +93,6 @@ export const eventConfig = {
   supabase: {
     // Browser realtime only. If these are missing, PING falls back to mockRealtime.
     url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
-    publishableKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? ""
+    publishableKey: process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
   }
 };

@@ -1,4 +1,4 @@
-export type LiveStatus = "live" | "startingSoon" | "notLive" | "offline";
+export type LiveStatus = "live" | "startingSoon" | "notLive" | "offline" | "ended";
 export type StreamType = "youtube" | "twitch" | "hls" | "placeholder";
 
 export const currentLive = {

@@ -7,6 +7,7 @@ import { usePingStore } from "@/store/usePingStore";
 import { ThemeSwitch } from "@/components/shell/ThemeSwitch";
 import { PixelSigil } from "@/components/identity/PixelSigil";
 import { createSigilSeed } from "@/utils/generateSigil";
+import { isNicknameAllowed, normalizeNickname } from "@/utils/launchGuards";
 
 export function EntryGate() {
   const [nickname, setNickname] = useState("");
@@ -16,10 +17,14 @@ export function EntryGate() {
   const currentLive = usePingStore((state) => state.currentLive);
   const featureFlags = usePingStore((state) => state.featureFlags);
   const sigilOptions = useMemo(() => [0, 1, 2].map((variant) => createSigilSeed(nickname, variant)), [nickname]);
+  const cleanNickname = normalizeNickname(nickname);
+  const canEnter = isNicknameAllowed(cleanNickname);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    enterSession(nickname, inviteCode, selectedVariant);
+    if (canEnter) {
+      enterSession(cleanNickname, inviteCode, selectedVariant);
+    }
   };
 
   return (
@@ -54,6 +59,11 @@ export function EntryGate() {
               required
               maxLength={24}
             />
+            {nickname && !canEnter ? (
+              <span className="mt-2 block font-mono text-[10px] uppercase tracking-[0.12em] text-ping-softPink">
+                use 2-24 letters, numbers, spaces, dots, dashes, or underscores
+              </span>
+            ) : null}
           </label>
 
           {featureFlags.enableInviteCode ? (
@@ -100,7 +110,10 @@ export function EntryGate() {
             </div>
           </div>
 
-          <button className="h-12 w-full rounded-full bg-ping-accent px-5 text-sm font-medium text-ping-bg transition hover:bg-ping-black">
+          <button
+            disabled={!canEnter}
+            className="h-12 w-full rounded-full bg-ping-accent px-5 text-sm font-medium text-ping-bg transition hover:bg-ping-black disabled:cursor-not-allowed disabled:bg-ping-muted disabled:text-ping-ink/35"
+          >
             enter the room
           </button>
         </form>

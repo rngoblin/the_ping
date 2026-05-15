@@ -6,9 +6,11 @@ import { messagesByRoom as initialMessages, type ChatMessage } from "@/data/mess
 import { rooms } from "@/data/rooms";
 import type { ScheduleAct } from "@/data/schedule";
 import { eventConfig, type PingEvent } from "@/data/eventConfig";
-import { getRealtimeAdapter } from "@/services/realtime";
+import { getRealtimeAdapter, getRealtimeProviderName } from "@/services/realtime";
 import { mockRealtime } from "@/services/realtime/mockRealtime";
 import type { PresenceState, PresenceUser, ReactionInput } from "@/services/realtime/types";
+import type { HostAnnouncement, HostEventState } from "@/services/host/hostControls";
+import { createThrottle, isChatMessageAllowed, isNicknameAllowed, normalizeChatMessage, normalizeNickname } from "@/utils/launchGuards";
 import { createSigilSeed } from "@/utils/generateSigil";
 
 export type ReactionPulse = {
@@ -47,6 +49,7 @@ type PingStore = {
   featureFlags: PingEvent["featureFlags"];
   activeRoomId: string;
   currentLive: PingEvent["currentLive"];
+  activeAnnouncement: HostAnnouncement | null;
   rooms: typeof rooms;
   schedule: ScheduleAct[];
   messagesByRoom: Record<string, ChatMessage[]>;
@@ -66,6 +69,9 @@ type PingStore = {
   setActiveRoom: (roomId: string) => void;
   setActiveEvent: (eventId: string) => void;
   setLiveStatus: (status: LiveStatus) => void;
+  setCurrentLivePatch: (patch: Partial<PingEvent["currentLive"]>) => void;
+  applyHostEventState: (state: HostEventState | null) => void;
+  setActiveAnnouncement: (announcement: HostAnnouncement | null) => void;
   setRoomMessages: (roomId: string, messages: ChatMessage[]) => void;
   setRoomPresence: (roomId: string, presence: PresenceState) => void;
   setReactionCount: (roomId: string, count: number) => void;
@@ -99,6 +105,8 @@ const themeStorageKey = "ping.themeMode.v01";
 const activeEvent = eventConfig.events.find((event) => event.id === eventConfig.currentEventId) ?? eventConfig.events[0];
 
 const createAvatarSeed = (nickname: string, sigilVariant = 0) => createSigilSeed(nickname, sigilVariant);
+const canSendChatMessage = createThrottle(900);
+const canSendReaction = createThrottle(420);
 
 const loadJson = <T,>(key: string, fallback: T): T => {
   if (typeof window === "undefined") {
@@ -158,6 +166,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
   featureFlags: activeEvent.featureFlags,
   activeRoomId: "main-floor",
   currentLive: activeEvent.currentLive,
+  activeAnnouncement: null,
   rooms: rooms.filter((room) => activeEvent.enabledRoomIds.includes(room.id)),
   schedule: activeEvent.schedule,
   messagesByRoom: initialMessages,
@@ -190,9 +199,9 @@ export const usePingStore = create<PingStore>((set, get) => ({
     set({ themeMode });
   },
   enterSession: (nickname, inviteCode, sigilVariant = 0) => {
-    const cleanNickname = nickname.trim();
+    const cleanNickname = normalizeNickname(nickname);
 
-    if (!cleanNickname) {
+    if (!isNicknameAllowed(cleanNickname)) {
       return;
     }
 
@@ -245,6 +254,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
       rooms: eventRooms,
       schedule: event.schedule,
       activeRoomId: eventRooms[0]?.id ?? "main-floor",
+      activeAnnouncement: null,
       viewerCount: event.currentLive.viewerCount,
       mobilePanel: "none"
     });
@@ -256,6 +266,23 @@ export const usePingStore = create<PingStore>((set, get) => ({
         status
       }
     })),
+  setCurrentLivePatch: (patch) =>
+    set((state) => ({
+      currentLive: {
+        ...state.currentLive,
+        ...patch
+      }
+    })),
+  applyHostEventState: (hostState) => {
+    if (!hostState) {
+      return;
+    }
+
+    const currentLivePatch = { ...hostState };
+    delete currentLivePatch.updatedAt;
+    get().setCurrentLivePatch(currentLivePatch);
+  },
+  setActiveAnnouncement: (announcement) => set({ activeAnnouncement: announcement }),
   setRoomMessages: (roomId, messages) =>
     set((state) => ({
       messagesByRoom: {
@@ -294,9 +321,13 @@ export const usePingStore = create<PingStore>((set, get) => ({
     });
   },
   sendMessage: (message) => {
-    const cleanMessage = message.trim();
+    const cleanMessage = normalizeChatMessage(message);
 
-    if (!cleanMessage) {
+    if (!isChatMessageAllowed(cleanMessage)) {
+      return;
+    }
+
+    if (!canSendChatMessage(get().localUser?.userId ?? "local-only")) {
       return;
     }
 
@@ -308,27 +339,61 @@ export const usePingStore = create<PingStore>((set, get) => ({
       body: cleanMessage
     };
 
-    void getRealtimeAdapter().sendRoomMessage(activeRoomId, input).catch(() => mockRealtime.sendRoomMessage(activeRoomId, input)).then((newMessage) => {
-      set((state) => ({
-        messagesByRoom: {
-          ...state.messagesByRoom,
-          [activeRoomId]: dedupeMessages([...(state.messagesByRoom[activeRoomId] ?? []), newMessage]).slice(-50)
+    const adapter = getRealtimeAdapter();
+    const shouldFallbackToMock = getRealtimeProviderName() !== "supabase";
+
+    void adapter
+      .sendRoomMessage(activeRoomId, input)
+      .catch((error: Error) => {
+        if (shouldFallbackToMock) {
+          return mockRealtime.sendRoomMessage(activeRoomId, input);
         }
-      }));
-    });
+
+        console.warn("PING message send failed", error.message);
+        return null;
+      })
+      .then((newMessage) => {
+        if (!newMessage) {
+          return;
+        }
+
+        set((state) => ({
+          messagesByRoom: {
+            ...state.messagesByRoom,
+            [activeRoomId]: dedupeMessages([...(state.messagesByRoom[activeRoomId] ?? []), newMessage]).slice(-50)
+          }
+        }));
+      });
   },
   addReaction: (emoji) => {
     const { activeRoomId, localUser } = get();
+    const userId = localUser?.userId ?? "local-only";
+
+    if (!canSendReaction(`${userId}:${activeRoomId}`)) {
+      return;
+    }
+
     const pulse = {
       id: createId(),
       emoji,
       roomId: activeRoomId,
-      userId: localUser?.userId ?? "local-only",
+      userId,
       x: 16 + Math.random() * 68,
       color: "#FF5A7C"
     };
 
-    void getRealtimeAdapter().sendReaction(pulse).catch(() => mockRealtime.sendReaction(pulse));
+    const shouldFallbackToMock = getRealtimeProviderName() !== "supabase";
+
+    void getRealtimeAdapter()
+      .sendReaction(pulse)
+      .catch((error: Error) => {
+        if (shouldFallbackToMock) {
+          return mockRealtime.sendReaction(pulse);
+        }
+
+        console.warn("PING reaction send failed", error.message);
+        return null;
+      });
 
     set((state) => ({
       reactions: state.reactions.some((reaction) => reaction.id === pulse.id) ? state.reactions : [...state.reactions, pulse],
