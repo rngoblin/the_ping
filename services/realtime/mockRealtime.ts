@@ -3,6 +3,7 @@ import { rooms } from "@/data/rooms";
 import type {
   PresenceCallback,
   ReactionCallback,
+  ReactionCountCallback,
   ReactionInput,
   RealtimeAdapter,
   RoomMessageCallback,
@@ -13,6 +14,8 @@ import type { ChatMessage } from "@/data/messages";
 const messageListeners = new Map<string, Set<RoomMessageCallback>>();
 const presenceListeners = new Map<string, Set<PresenceCallback>>();
 const reactionListeners = new Set<ReactionCallback>();
+const reactionCountListeners = new Map<string, Set<ReactionCountCallback>>();
+const reactionCounts: Record<string, number> = {};
 const messageState: Record<string, ChatMessage[]> = structuredClone(messagesByRoom);
 
 const createId = () => {
@@ -72,7 +75,9 @@ export const mockRealtime: RealtimeAdapter = {
     };
   },
   sendReaction: async (reaction: ReactionInput) => {
+    reactionCounts[reaction.roomId] = (reactionCounts[reaction.roomId] ?? 0) + 1;
     reactionListeners.forEach((callback) => callback(reaction));
+    reactionCountListeners.get(reaction.roomId)?.forEach((callback) => callback(reactionCounts[reaction.roomId] ?? 0));
     return reaction;
   },
   subscribeToReactions: (callback: ReactionCallback) => {
@@ -80,6 +85,16 @@ export const mockRealtime: RealtimeAdapter = {
 
     return () => {
       reactionListeners.delete(callback);
+    };
+  },
+  subscribeToReactionCount: (roomId, callback) => {
+    const listeners = reactionCountListeners.get(roomId) ?? new Set<ReactionCountCallback>();
+    listeners.add(callback);
+    reactionCountListeners.set(roomId, listeners);
+    callback(reactionCounts[roomId] ?? 0);
+
+    return () => {
+      listeners.delete(callback);
     };
   },
   captureNotifyLead: async () => {

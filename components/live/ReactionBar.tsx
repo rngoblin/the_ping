@@ -12,6 +12,8 @@ const reactions = [
 
 export function ReactionBar() {
   const addReaction = usePingStore((state) => state.addReaction);
+  const activeRoomId = usePingStore((state) => state.activeRoomId);
+  const reactionCount = usePingStore((state) => state.reactionCountsByRoom[activeRoomId] ?? 0);
 
   return (
     <div className="reaction-bar flex items-center justify-between gap-3">
@@ -34,10 +36,22 @@ export function ReactionBar() {
         })}
       </div>
       <p className="max-w-[9.5rem] text-right font-mono text-[9px] uppercase leading-relaxed text-ping-ink/45 sm:max-w-[12rem] sm:text-[10px]">
-        reactions ripple through the room
+        {reactionCount.toLocaleString()} pulses in this room
       </p>
     </div>
   );
+}
+
+function ReactionSymbol({ emoji, size = 20 }: { emoji: string; size?: number }) {
+  if (emoji === "spark") {
+    return <Sparkles size={size} />;
+  }
+
+  if (emoji === "charge") {
+    return <Zap size={size} />;
+  }
+
+  return <Heart size={size} />;
 }
 
 export function ReactionPulses() {
@@ -58,7 +72,9 @@ export function ReactionPulses() {
             className="absolute bottom-8 grid size-12 place-items-center rounded-full border border-ping-bg/45 bg-ping-bg/35 text-ping-pink backdrop-blur-md"
             style={{ left: `${reaction.x}%`, color: "var(--pulse-pink)" }}
           >
-            <span className="size-4 rounded-full bg-current opacity-45 shadow-[0_0_28px_currentColor]" />
+            <span className="grid size-8 place-items-center rounded-full bg-ping-pink/15 shadow-[0_0_28px_currentColor]">
+              <ReactionSymbol emoji={reaction.emoji} size={18} />
+            </span>
           </motion.div>
         ))}
       </AnimatePresence>

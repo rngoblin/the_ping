@@ -33,6 +33,7 @@ export function AppShell() {
   const hydrateTheme = usePingStore((state) => state.hydrateTheme);
   const setRoomMessages = usePingStore((state) => state.setRoomMessages);
   const setRoomPresence = usePingStore((state) => state.setRoomPresence);
+  const setReactionCount = usePingStore((state) => state.setReactionCount);
   const receiveReaction = usePingStore((state) => state.receiveReaction);
   const rooms = usePingStore((state) => state.rooms);
   const activeRoomId = usePingStore((state) => state.activeRoomId);
@@ -63,12 +64,16 @@ export function AppShell() {
       },
       localUser ? createPresenceUser(localUser, activeRoomId) : undefined
     );
+    const unsubscribeReactionCount = adapter.subscribeToReactionCount(activeRoomId, (count) => {
+      setReactionCount(activeRoomId, count);
+    });
 
     return () => {
       unsubscribeMessages();
       unsubscribePresence();
+      unsubscribeReactionCount();
     };
-  }, [activeRoomId, localUser, setRoomMessages, setRoomPresence]);
+  }, [activeRoomId, localUser, setReactionCount, setRoomMessages, setRoomPresence]);
 
   useEffect(() => {
     const unsubscribeReactions = getRealtimeAdapter().subscribeToReactions(receiveReaction);
@@ -111,7 +116,7 @@ export function AppShell() {
     >
       <div className="noise" />
       <div className="relative z-10 flex min-h-dvh">
-        <Sidebar />
+        <Sidebar onOpenSchedule={openFullSchedule} />
 
         <div className="mx-auto flex w-full max-w-[118rem] flex-1 flex-col">
           <div className="safe-top sticky top-0 z-30 flex items-center justify-between border-b border-ping-black/10 bg-ping-bg/82 px-3 py-2.5 backdrop-blur-xl lg:hidden">
@@ -127,11 +132,13 @@ export function AppShell() {
           <div className="grid flex-1 gap-3 p-3 pb-[calc(5.25rem+env(safe-area-inset-bottom))] sm:gap-4 sm:p-4 sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:grid-cols-[minmax(0,1fr)_22rem] xl:gap-5 xl:p-5">
             <div className="min-w-0 space-y-4">
               <TopStatus />
-              <LivePlayer />
+              <section id="live-section" className="scroll-mt-6">
+                <LivePlayer />
+              </section>
               <ReactionBar />
               <RoomSwitcher />
 
-              <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
+              <div id="rooms-section" className="grid scroll-mt-6 gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
                 <div className="hidden lg:block">
                   <RoomList />
                 </div>
@@ -140,8 +147,12 @@ export function AppShell() {
             </div>
 
             <aside className="hidden content-start gap-4 xl:grid xl:grid-cols-1">
-              <SchedulePanel onOpenFullSchedule={openFullSchedule} />
-              <RoomVibe />
+              <section id="schedule-section" className="scroll-mt-6">
+                <SchedulePanel onOpenFullSchedule={openFullSchedule} />
+              </section>
+              <section id="vibe-section" className="scroll-mt-6">
+                <RoomVibe />
+              </section>
               <section className="rounded-lg border border-ping-black/10 bg-ping-surface/80 p-4 shadow-line">
                 <h2 className="mb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/50">people here</h2>
                 <div className="flex -space-x-2">

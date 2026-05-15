@@ -39,6 +39,7 @@ export type Unsubscribe = () => void;
 export type RoomMessageCallback = (messages: ChatMessage[]) => void;
 export type PresenceCallback = (presence: PresenceState) => void;
 export type ReactionCallback = (reaction: ReactionInput) => void;
+export type ReactionCountCallback = (count: number) => void;
 
 export type RealtimeAdapter = {
   subscribeToRoomMessages: (roomId: string, callback: RoomMessageCallback) => Unsubscribe;
@@ -46,5 +47,6 @@ export type RealtimeAdapter = {
   subscribeToPresence: (roomId: string, callback: PresenceCallback, user?: PresenceUser) => Unsubscribe;
   sendReaction: (reaction: ReactionInput) => Promise<ReactionInput>;
   subscribeToReactions: (callback: ReactionCallback) => Unsubscribe;
+  subscribeToReactionCount: (roomId: string, callback: ReactionCountCallback) => Unsubscribe;
   captureNotifyLead: (lead: NotifyLeadInput) => Promise<void>;
 };

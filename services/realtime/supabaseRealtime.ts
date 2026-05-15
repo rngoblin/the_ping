@@ -6,6 +6,7 @@ import type {
   PresenceState,
   PresenceUser,
   ReactionCallback,
+  ReactionCountCallback,
   ReactionInput,
   RealtimeAdapter,
   RoomMessageCallback,
@@ -374,6 +375,56 @@ export const supabaseRealtime: RealtimeAdapter = {
 
     return () => {
       reactionChannel = null;
+      void supabase.removeChannel(channel);
+    };
+  },
+
+  subscribeToReactionCount: (roomId: string, callback: ReactionCountCallback) => {
+    const supabase = getSupabaseClient();
+
+    if (!supabase) {
+      callback(0);
+      return () => undefined;
+    }
+
+    let isActive = true;
+    let count = 0;
+
+    void supabase
+      .from("reactions")
+      .select("id", { count: "exact", head: true })
+      .eq("room_id", roomId)
+      .then(({ count: initialCount, error }) => {
+        if (!isActive || error) {
+          if (error) {
+            console.warn("PING Supabase reaction count failed", error.message);
+          }
+          return;
+        }
+
+        count = initialCount ?? 0;
+        callback(count);
+      });
+
+    const channel = supabase
+      .channel(`reaction-count:${roomId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "reactions",
+          filter: `room_id=eq.${roomId}`
+        },
+        () => {
+          count += 1;
+          callback(count);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isActive = false;
       void supabase.removeChannel(channel);
     };
   },

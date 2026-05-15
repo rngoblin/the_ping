@@ -49,6 +49,7 @@ type PingStore = {
   schedule: ScheduleAct[];
   messagesByRoom: Record<string, ChatMessage[]>;
   reactions: ReactionPulse[];
+  reactionCountsByRoom: Record<string, number>;
   presenceByRoom: Record<string, PresenceState>;
   notifyLeads: NotifyLead[];
   themeMode: ThemeMode;
@@ -65,6 +66,7 @@ type PingStore = {
   setLiveStatus: (status: LiveStatus) => void;
   setRoomMessages: (roomId: string, messages: ChatMessage[]) => void;
   setRoomPresence: (roomId: string, presence: PresenceState) => void;
+  setReactionCount: (roomId: string, count: number) => void;
   receiveReaction: (reaction: ReactionInput) => void;
   sendMessage: (message: string) => void;
   addReaction: (emoji: string) => void;
@@ -161,13 +163,14 @@ export const usePingStore = create<PingStore>((set, get) => ({
   schedule: activeEvent.schedule,
   messagesByRoom: initialMessages,
   reactions: [],
+  reactionCountsByRoom: {},
   presenceByRoom: {
     "main-floor": { roomId: "main-floor", count: 642, avatars: ["SA", "NK", "ME", "LO", "VE", "JU", "AN"] }
   },
   notifyLeads: [],
   themeMode: "daylight",
   viewerCount: activeEvent.currentLive.viewerCount,
-  isPlaying: true,
+  isPlaying: false,
   isMuted: false,
   volume: 72,
   mobilePanel: "none",
@@ -261,6 +264,13 @@ export const usePingStore = create<PingStore>((set, get) => ({
       presenceByRoom: {
         ...state.presenceByRoom,
         [roomId]: presence
+      }
+    })),
+  setReactionCount: (roomId, count) =>
+    set((state) => ({
+      reactionCountsByRoom: {
+        ...state.reactionCountsByRoom,
+        [roomId]: count
       }
     })),
   receiveReaction: (reaction) => {

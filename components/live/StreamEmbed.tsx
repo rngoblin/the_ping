@@ -64,6 +64,10 @@ export function StreamEmbed() {
     return null;
   }
 
+  if (!isPlaying && (currentLive.streamType === "youtube" || currentLive.streamType === "twitch" || currentLive.streamType === "hls")) {
+    return null;
+  }
+
   if (hasEmbed && (currentLive.streamType === "youtube" || currentLive.streamType === "twitch")) {
     return (
       <iframe
@@ -78,7 +82,7 @@ export function StreamEmbed() {
           iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ event: "command", func: isPlaying ? "playVideo" : "pauseVideo", args: [] }), "*");
         }}
         referrerPolicy="strict-origin-when-cross-origin"
-        className="absolute inset-0 z-[1] h-full w-full border-0 opacity-80"
+        className="absolute inset-0 z-[1] h-full w-full border-0 opacity-100"
       />
     );
   }
@@ -89,7 +93,7 @@ export function StreamEmbed() {
         ref={videoRef}
         key={currentLive.streamUrl}
         src={currentLive.streamUrl}
-        className="absolute inset-0 z-[1] h-full w-full object-cover opacity-80"
+        className="absolute inset-0 z-[1] h-full w-full object-cover opacity-100"
         autoPlay
         muted={isMuted}
         loop
