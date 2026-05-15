@@ -34,6 +34,7 @@ Important:
 - Do not place private/secret API keys in this app while it is hosted as static GitHub Pages.
 - The GitHub Pages workflow refuses to build if the browser key starts with `sb_secret`.
 - The frontend does not include hardcoded Supabase fallback keys. Configure deploy env vars before a real test night.
+- The deploy workflow includes the current public Supabase project URL as a default. This URL is not a private credential; keys still come from GitHub Secrets.
 - If PING later needs private APIs, add a backend/API route or serverless proxy and keep private keys there.
 - If Supabase env vars are missing, PING falls back to `mockRealtime`.
 - `NEXT_PUBLIC_FEEDBACK_URL` is optional. If it is missing, the test build falls back to the GitHub issue form.

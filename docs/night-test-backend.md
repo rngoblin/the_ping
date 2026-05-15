@@ -95,7 +95,7 @@ If secrets are not set, the deployed app will still work, but it will use mock r
 
 The deploy workflow has a guardrail: if the public browser key starts with `sb_secret`, the build fails instead of leaking the key into the static bundle.
 
-There is no hardcoded Supabase fallback in the app. If deploy secrets are missing, the deployed app will fall back to mock realtime.
+There is no hardcoded Supabase key fallback in the app. The workflow includes the current public Supabase project URL as a deploy default because the URL is not a secret. Configure `NEXT_PUBLIC_SUPABASE_URL` as a secret or repository variable if the project changes.
 
 ## 6. Configure Tonight
 
