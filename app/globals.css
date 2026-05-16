@@ -498,7 +498,8 @@ button {
 :root[data-theme="night"] .live-player .text-ping-bg,
 :root[data-theme="night"] .live-player .text-ping-bg\/80,
 :root[data-theme="night"] .live-player .text-ping-bg\/75,
-:root[data-theme="night"] .live-player .text-ping-bg\/65 {
+:root[data-theme="night"] .live-player .text-ping-bg\/65,
+:root[data-theme="night"] .live-player .text-ping-bg\/55 {
   color: #e6ece8;
 }
 

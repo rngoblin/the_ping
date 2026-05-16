@@ -1,5 +1,4 @@
 import { messagesByRoom } from "@/data/messages";
-import { rooms } from "@/data/rooms";
 import type {
   PresenceCallback,
   ReactionCallback,
@@ -10,7 +9,6 @@ import type {
   RoomMessageInput
 } from "@/services/realtime/types";
 import type { ChatMessage } from "@/data/messages";
-import { createSigilSeed } from "@/utils/generateSigil";
 
 const messageListeners = new Map<string, Set<RoomMessageCallback>>();
 const presenceListeners = new Map<string, Set<PresenceCallback>>();
@@ -52,7 +50,8 @@ export const mockRealtime: RealtimeAdapter = {
       avatar: input.avatar,
       message: input.body,
       timestamp: "now",
-      createdAt
+      createdAt,
+      kind: input.userId.startsWith("system:") ? "system" : "user"
     };
 
     messageState[roomId] = [...(messageState[roomId] ?? []), newMessage];
@@ -62,23 +61,12 @@ export const mockRealtime: RealtimeAdapter = {
   },
   subscribeToPresence: (roomId, callback, user) => {
     const listeners = presenceListeners.get(roomId) ?? new Set<PresenceCallback>();
-    const room = rooms.find((item) => item.id === roomId);
-    const fallbackAvatars = [
-      createSigilSeed("salma", 0),
-      createSigilSeed("niko", 1),
-      createSigilSeed("mei", 2),
-      createSigilSeed("lo", 0),
-      createSigilSeed("ve", 1),
-      createSigilSeed("june", 2),
-      createSigilSeed("anna", 0)
-    ];
-    const avatars = user ? [user.avatar, ...fallbackAvatars.filter((avatar) => avatar !== user.avatar)].slice(0, 7) : fallbackAvatars;
     listeners.add(callback);
     presenceListeners.set(roomId, listeners);
     callback({
       roomId,
-      count: room?.count ?? 0,
-      avatars,
+      count: user ? 1 : 0,
+      avatars: user ? [user.avatar] : [],
       users: user ? [user] : undefined
     });
 

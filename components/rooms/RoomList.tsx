@@ -17,7 +17,7 @@ export function RoomList() {
       <div className="grid gap-2 lg:min-h-0 lg:flex-1 lg:grid-rows-6">
         {rooms.map((room) => {
           const isActive = activeRoomId === room.id;
-          const presenceCount = presenceByRoom[room.id]?.count;
+          const presenceCount = presenceByRoom[room.id]?.count ?? 0;
 
           return (
             <button
@@ -34,7 +34,7 @@ export function RoomList() {
                   <span className="size-2 rounded-full" style={{ backgroundColor: room.accent }} />
                   {room.name}
                 </span>
-                <span className="font-mono text-[10px] text-ping-ink/45">{presenceCount ?? room.count}</span>
+                <span className="font-mono text-[10px] text-ping-ink/45">{presenceCount}</span>
               </div>
               <p className="mt-2 truncate text-xs text-ping-ink/50">{room.description}</p>
               <p className="mt-2 truncate font-mono text-[10px] uppercase text-ping-ink/35">{room.tagline}</p>

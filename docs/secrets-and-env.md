@@ -24,6 +24,7 @@ NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
 # Legacy alternative:
 # NEXT_PUBLIC_SUPABASE_ANON_KEY=
 NEXT_PUBLIC_FEEDBACK_URL=
+NEXT_PUBLIC_ADMIN_CODE=
 ```
 
 Important:
@@ -39,3 +40,5 @@ Important:
 - If PING later needs private APIs, add a backend/API route or serverless proxy and keep private keys there.
 - If Supabase env vars are missing, PING falls back to `mockRealtime`.
 - `NEXT_PUBLIC_FEEDBACK_URL` is optional. If it is missing, the test build falls back to the GitHub issue form.
+- `NEXT_PUBLIC_ADMIN_CODE` unlocks `/admin` for the static closed-test build. It is a lightweight gate, not secure auth, because static `NEXT_PUBLIC_*` values are visible in the browser bundle.
+- Run `supabase/feedback.sql` once before using the in-app feedback form.

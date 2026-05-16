@@ -8,6 +8,7 @@ import { getRealtimeProviderName } from "@/services/realtime";
 import { getSupabaseRuntimeStatus } from "@/services/supabase/client";
 import { saveHostEventState, sendHostAnnouncement, type HostEventState } from "@/services/host/hostControls";
 import { createModerationAction } from "@/services/host/moderation";
+import { fetchFeedback, type FeedbackItem } from "@/services/feedback";
 
 export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const events = usePingStore((state) => state.events);
@@ -36,6 +37,8 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
   const [announcementLabel, setAnnouncementLabel] = useState("send announcement");
   const [selectedModerationUserId, setSelectedModerationUserId] = useState("");
   const [moderationLabel, setModerationLabel] = useState("");
+  const [feedbackItems, setFeedbackItems] = useState<FeedbackItem[]>([]);
+  const [feedbackLabel, setFeedbackLabel] = useState("");
 
   const currentHostState = useMemo<HostEventState>(
     () => ({
@@ -82,6 +85,22 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
       setSelectedModerationUserId(onlineUsers[0].userId);
     }
   }, [onlineUsers, selectedModerationUserId]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    setFeedbackLabel("loading...");
+    void fetchFeedback()
+      .then((items) => {
+        setFeedbackItems(items);
+        setFeedbackLabel("");
+      })
+      .catch((error: Error) => {
+        setFeedbackLabel(error.message);
+      });
+  }, [isOpen]);
 
   if (!isOpen) {
     return null;
@@ -391,6 +410,42 @@ export function DebugPanel({ isOpen, onClose }: { isOpen: boolean; onClose: () =
         <section className="rounded-lg border border-ping-bg/10 p-3">
           <p className="mb-2 font-mono text-[10px] uppercase text-ping-bg/45">notify leads</p>
           <pre className="max-h-36 overflow-auto whitespace-pre-wrap text-xs leading-relaxed text-ping-bg/70">{JSON.stringify(notifyLeads, null, 2)}</pre>
+        </section>
+
+        <section className="rounded-lg border border-ping-bg/10 p-3">
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <p className="font-mono text-[10px] uppercase text-ping-bg/45">feedback</p>
+            <button
+              onClick={() => {
+                setFeedbackLabel("loading...");
+                void fetchFeedback()
+                  .then((items) => {
+                    setFeedbackItems(items);
+                    setFeedbackLabel("");
+                  })
+                  .catch((error: Error) => setFeedbackLabel(error.message));
+              }}
+              className="rounded-full border border-ping-bg/15 px-2 py-1 font-mono text-[9px] uppercase text-ping-bg/65"
+            >
+              refresh
+            </button>
+          </div>
+          {feedbackLabel ? <p className="mb-2 text-xs text-ping-bg/45">{feedbackLabel}</p> : null}
+          <div className="soft-scroll max-h-56 space-y-2 overflow-y-auto">
+            {feedbackItems.length ? (
+              feedbackItems.map((item) => (
+                <article key={item.id} className="rounded-md border border-ping-bg/10 bg-ping-bg/5 p-2">
+                  <div className="flex items-center justify-between gap-3 font-mono text-[9px] uppercase text-ping-bg/35">
+                    <span>{item.username}</span>
+                    <span>{new Date(item.createdAt).toLocaleString()}</span>
+                  </div>
+                  <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-ping-bg/70">{item.message}</p>
+                </article>
+              ))
+            ) : (
+              <p className="text-xs text-ping-bg/35">no feedback yet</p>
+            )}
+          </div>
         </section>
 
         <div className="flex flex-wrap gap-2">

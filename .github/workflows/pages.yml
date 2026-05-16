@@ -42,6 +42,7 @@ jobs:
           SUPABASE_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY }}
           SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           FEEDBACK_URL: ${{ vars.NEXT_PUBLIC_FEEDBACK_URL }}
+          ADMIN_CODE: ${{ secrets.NEXT_PUBLIC_ADMIN_CODE }}
         run: |
           set -euo pipefail
           SUPABASE_URL="${SUPABASE_URL_SECRET:-${SUPABASE_URL_VAR:-$DEFAULT_SUPABASE_URL}}"
@@ -62,6 +63,7 @@ jobs:
             echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY"
             echo "NEXT_PUBLIC_SUPABASE_ANON_KEY=$SUPABASE_ANON_KEY"
             echo "NEXT_PUBLIC_FEEDBACK_URL=$FEEDBACK_URL"
+            echo "NEXT_PUBLIC_ADMIN_CODE=$ADMIN_CODE"
           } >> "$GITHUB_ENV"
 
       - name: Build static site

@@ -52,12 +52,23 @@ create table if not exists public.moderation_actions (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.feedback (
+  id uuid primary key default gen_random_uuid(),
+  username text,
+  room_id text,
+  message text not null,
+  user_session_id text,
+  user_agent text,
+  created_at timestamptz not null default now()
+);
+
 create index if not exists messages_room_created_idx on public.messages (room_id, created_at desc);
 create index if not exists reactions_created_idx on public.reactions (created_at desc);
 create index if not exists notify_leads_created_idx on public.notify_leads (created_at desc);
 create index if not exists announcements_event_created_idx on public.announcements (event_id, created_at desc);
 create index if not exists moderation_actions_event_created_idx on public.moderation_actions (event_id, created_at desc);
 create index if not exists moderation_actions_target_user_idx on public.moderation_actions (target_user_id, created_at desc);
+create index if not exists feedback_created_idx on public.feedback (created_at desc);
 
 alter table public.messages enable row level security;
 alter table public.reactions enable row level security;
@@ -65,6 +76,7 @@ alter table public.notify_leads enable row level security;
 alter table public.event_state enable row level security;
 alter table public.announcements enable row level security;
 alter table public.moderation_actions enable row level security;
+alter table public.feedback enable row level security;
 
 drop policy if exists "anon can read messages" on public.messages;
 create policy "anon can read messages"
@@ -163,6 +175,18 @@ with check (
   and length(trim(target_user_id)) > 0
   and (target_message_id is null or length(trim(target_message_id)) > 0)
 );
+
+drop policy if exists "anon can insert feedback" on public.feedback;
+create policy "anon can insert feedback"
+on public.feedback for insert
+to anon
+with check (length(trim(message)) between 1 and 8000);
+
+drop policy if exists "anon can read feedback for host export" on public.feedback;
+create policy "anon can read feedback for host export"
+on public.feedback for select
+to anon
+using (true);
 
 -- After running this file, enable Realtime for public.messages, public.reactions,
 -- public.event_state, public.announcements, and public.moderation_actions

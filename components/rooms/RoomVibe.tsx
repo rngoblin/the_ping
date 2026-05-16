@@ -41,7 +41,7 @@ export function RoomVibe() {
       </div>
       <div className="mt-4 flex items-center gap-2 font-mono text-[10px] uppercase text-ping-ink/50">
         <Users size={13} />
-        {(presence?.count ?? activeRoom.count).toLocaleString()} people in this room
+        {(presence?.count ?? 0).toLocaleString()} people in this room
       </div>
     </section>
   );

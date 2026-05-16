@@ -88,6 +88,7 @@ export function BackgroundRadioPlayer() {
   const currentLive = usePingStore((state) => state.currentLive);
   const [isReady, setIsReady] = useState(false);
   const [needsGesture, setNeedsGesture] = useState(false);
+  const [isRadioPlaying, setIsRadioPlaying] = useState(false);
 
   const isLiveStreamActive = useMemo(
     () => currentLive.status === "live" && currentLive.streamType !== "placeholder" && Boolean(currentLive.embedUrl || currentLive.streamUrl),
@@ -126,7 +127,11 @@ export function BackgroundRadioPlayer() {
           },
           onStateChange: (event) => {
             if (event.data === window.YT?.PlayerState?.PLAYING) {
+              setIsRadioPlaying(true);
               setNeedsGesture(false);
+            }
+            if (event.data === window.YT?.PlayerState?.PAUSED) {
+              setIsRadioPlaying(false);
             }
           },
           onError: () => setNeedsGesture(true)
@@ -155,6 +160,7 @@ export function BackgroundRadioPlayer() {
 
     if (!isRadioFallbackActive) {
       player.pauseVideo();
+      setIsRadioPlaying(false);
       setNeedsGesture(false);
       return;
     }
@@ -192,16 +198,17 @@ export function BackgroundRadioPlayer() {
       <div aria-hidden="true" className="pointer-events-none fixed -left-10 top-0 h-px w-px overflow-hidden opacity-0">
         <div ref={containerRef} />
       </div>
-      {isRadioFallbackActive && needsGesture ? (
-        <button
-          type="button"
-          onClick={enableRadio}
-          className="fixed right-3 top-[calc(0.75rem+env(safe-area-inset-top))] z-40 flex items-center gap-2 rounded-full border border-ping-accent/35 bg-ping-surface/90 px-3 py-2 font-mono text-[10px] uppercase tracking-[0.14em] text-ping-accent shadow-[0_0_24px_rgba(168,255,96,0.14)] backdrop-blur-md transition hover:border-ping-pink/40 hover:text-ping-pink"
-        >
-          <Radio size={13} />
-          enable sound
-        </button>
-      ) : null}
+      <button
+        type="button"
+        onClick={needsGesture ? enableRadio : undefined}
+        className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-3 z-40 flex max-w-[calc(100vw-9.5rem)] items-center gap-2 rounded-full border border-ping-accent/35 bg-ping-surface/92 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ping-accent shadow-[0_0_24px_rgba(168,255,96,0.12)] backdrop-blur-md transition hover:border-ping-pink/40 hover:text-ping-pink sm:bottom-4 sm:left-4"
+        aria-label={needsGesture ? "Enable radio ping" : "Radio ping status"}
+      >
+        <Radio size={13} />
+        <span>radio ping</span>
+        <span className="text-ping-ink/35">/</span>
+        <span className="truncate">{!isRadioFallbackActive ? "paused for live" : needsGesture ? "tap to enable sound" : isRadioPlaying ? "playing" : "tuning"}</span>
+      </button>
     </>
   );
 }

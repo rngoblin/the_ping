@@ -56,22 +56,26 @@ export function TopStatus({ onOpenHostPanel }: { onOpenHostPanel?: () => void })
       </div>
       <div className="flex items-center gap-2">
         <ThemeSwitch compact />
-        <button
-          onClick={onOpenHostPanel}
-          className="hidden size-9 place-items-center rounded-full border border-ping-black/10 bg-ping-surface transition hover:bg-ping-muted sm:grid"
-          aria-label="Open host panel"
-          title="Host panel"
-        >
-          <Settings2 size={16} />
-        </button>
-        <button
-          onClick={onOpenHostPanel}
-          className="grid size-9 place-items-center rounded-full border border-ping-black/10 bg-ping-surface transition hover:bg-ping-muted lg:hidden"
-          aria-label="Open host panel"
-          title="Host panel"
-        >
-          <Menu size={17} />
-        </button>
+        {onOpenHostPanel ? (
+          <>
+            <button
+              onClick={onOpenHostPanel}
+              className="hidden size-9 place-items-center rounded-full border border-ping-black/10 bg-ping-surface transition hover:bg-ping-muted sm:grid"
+              aria-label="Open host panel"
+              title="Host panel"
+            >
+              <Settings2 size={16} />
+            </button>
+            <button
+              onClick={onOpenHostPanel}
+              className="grid size-9 place-items-center rounded-full border border-ping-black/10 bg-ping-surface transition hover:bg-ping-muted lg:hidden"
+              aria-label="Open host panel"
+              title="Host panel"
+            >
+              <Menu size={17} />
+            </button>
+          </>
+        ) : null}
       </div>
     </header>
   );

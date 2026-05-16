@@ -62,7 +62,8 @@ const toChatMessage = (row: MessageRow): ChatMessage => ({
   avatar: row.avatar_seed || fallbackAvatarSeed(row.nickname),
   message: row.body,
   timestamp: relativeTimestamp(row.created_at),
-  createdAt: row.created_at
+  createdAt: row.created_at,
+  kind: row.user_id.startsWith("system:") ? "system" : "user"
 });
 
 const toReaction = (row: ReactionRow): ReactionInput => ({
@@ -227,25 +228,22 @@ export const supabaseRealtime: RealtimeAdapter = {
   subscribeToPresence: (roomId: string, callback: PresenceCallback, user?: PresenceUser) => {
     const supabase = getSupabaseClient();
 
-    if (!supabase || !user) {
+    if (!supabase) {
       callback(makeEmptyPresence(roomId));
       return () => undefined;
     }
 
-    callback({
-      roomId,
-      count: 1,
-      avatars: [user.avatar],
-      users: [user]
-    });
+    callback(makeEmptyPresence(roomId));
 
-    const channel = supabase.channel(`presence:${roomId}`, {
-      config: {
-        presence: {
-          key: user.userId
-        }
-      }
-    });
+    const channel = user
+      ? supabase.channel(`presence:${roomId}`, {
+          config: {
+            presence: {
+              key: user.userId
+            }
+          }
+        })
+      : supabase.channel(`presence:${roomId}`);
 
     const emitPresence = () => {
       const state = channel.presenceState<PresenceUser>();
@@ -263,12 +261,18 @@ export const supabaseRealtime: RealtimeAdapter = {
 
     channel.on("presence", { event: "sync" }, emitPresence).subscribe((status) => {
       if (status === "SUBSCRIBED") {
-        void channel.track(user);
+        if (user) {
+          void channel.track(user);
+        } else {
+          emitPresence();
+        }
       }
     });
 
     return () => {
-      void channel.untrack();
+      if (user) {
+        void channel.untrack();
+      }
       void supabase.removeChannel(channel);
     };
   },

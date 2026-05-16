@@ -111,6 +111,7 @@ const sessionStorageKey = "ping.localSession.v03";
 const notifyStorageKey = "ping.notifyLeads.v03";
 const themeStorageKey = "ping.themeMode.v01";
 const roomEntryStorageKey = "ping.roomEntryEvents.v01";
+const systemAvatarSeed = createSigilSeed("PING", 0);
 
 const activeEvent = eventConfig.events.find((event) => event.id === eventConfig.currentEventId) ?? eventConfig.events[0];
 
@@ -205,13 +206,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
   bannedUserIds: [],
   reactions: [],
   reactionCountsByRoom: {},
-  presenceByRoom: {
-    "main-floor": {
-      roomId: "main-floor",
-      count: 642,
-      avatars: ["salma:0", "niko:1", "mei:2", "lo:0", "ve:1", "june:2", "anna:0"]
-    }
-  },
+  presenceByRoom: Object.fromEntries(rooms.map((room) => [room.id, { roomId: room.id, count: 0, avatars: [], users: [] }])),
   notifyLeads: [],
   themeMode: "daylight",
   viewerCount: activeEvent.currentLive.viewerCount,
@@ -271,19 +266,9 @@ export const usePingStore = create<PingStore>((set, get) => ({
     set({ localUser: null, hasHydratedSession: true, sessionWasRestored: false });
   },
   setActiveRoom: (roomId) => {
-    const room = get().rooms.find((item) => item.id === roomId);
-
     set((state) => ({
       activeRoomId: roomId,
-      mobilePanel: state.mobilePanel === "rooms" ? "none" : state.mobilePanel,
-      presenceByRoom: {
-        ...state.presenceByRoom,
-        [roomId]: {
-          roomId,
-          count: room?.count ?? 0,
-          avatars: ["salma:0", "niko:1", "mei:2", "lo:0", "ve:1", "june:2", "anna:0"]
-        }
-      }
+      mobilePanel: state.mobilePanel === "rooms" ? "none" : state.mobilePanel
     }));
   },
   noteRoomEntry: (roomId) => {
@@ -304,23 +289,29 @@ export const usePingStore = create<PingStore>((set, get) => ({
 
     persistJson(roomEntryStorageKey, { ...stored, [key]: now });
 
-    const systemMessage: ChatMessage = {
-      id: `system-entry-${key}-${now}`,
-      roomId: nextRoomId,
-      username: "room",
-      avatar: createSigilSeed("PING", 0),
-      message: `${localUser.nickname} entered the room`,
-      timestamp: "now",
-      createdAt: new Date(now).toISOString(),
-      kind: "system"
-    };
+    void getRealtimeAdapter()
+      .sendRoomMessage(nextRoomId, {
+        userId: `system:entry:${localUser.userId}`,
+        nickname: "room",
+        avatar: systemAvatarSeed,
+        body: `${localUser.nickname} entered the room`
+      })
+      .catch((error: Error) => {
+        console.warn("PING room entry event failed", error.message);
+        return null;
+      })
+      .then((systemMessage) => {
+        if (!systemMessage) {
+          return;
+        }
 
-    set((state) => ({
-      messagesByRoom: {
-        ...state.messagesByRoom,
-        [nextRoomId]: mergeRoomMessages([...(state.messagesByRoom[nextRoomId] ?? []), systemMessage])
-      }
-    }));
+        set((state) => ({
+          messagesByRoom: {
+            ...state.messagesByRoom,
+            [nextRoomId]: mergeRoomMessages([...(state.messagesByRoom[nextRoomId] ?? []), { ...systemMessage, kind: "system" }])
+          }
+        }));
+      });
   },
   setActiveEvent: (eventId) => {
     const event = get().events.find((item) => item.id === eventId);
@@ -367,16 +358,12 @@ export const usePingStore = create<PingStore>((set, get) => ({
   },
   setActiveAnnouncement: (announcement) => set({ activeAnnouncement: announcement }),
   setRoomMessages: (roomId, messages) =>
-    set((state) => {
-      const systemMessages = (state.messagesByRoom[roomId] ?? []).filter((message) => message.kind === "system");
-
-      return {
-        messagesByRoom: {
-          ...state.messagesByRoom,
-          [roomId]: mergeRoomMessages([...messages, ...systemMessages])
-        }
-      };
-    }),
+    set((state) => ({
+      messagesByRoom: {
+        ...state.messagesByRoom,
+        [roomId]: mergeRoomMessages(messages)
+      }
+    })),
   setModerationActions: (actions) =>
     set(() => ({
       moderationActions: actions,
