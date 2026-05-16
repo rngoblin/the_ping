@@ -241,19 +241,17 @@ export function BackgroundRadioPlayer() {
       <div aria-hidden="true" className="pointer-events-none fixed -left-10 top-0 h-px w-px overflow-hidden opacity-0">
         <div ref={containerRef} />
       </div>
-      <section className="radio-widget w-44 shrink-0 rounded-md border border-ping-black/10 bg-ping-surface/90 p-2 text-ping-ink shadow-line backdrop-blur-md sm:w-56">
-        <div className="mb-1.5 flex items-center justify-between gap-2">
-          <p className="truncate font-mono text-[9px] uppercase tracking-[0.16em] text-ping-accent">radio ping</p>
-          <p className="truncate font-mono text-[8px] uppercase tracking-[0.12em] text-ping-ink/42">
-            {!isRadioFallbackActive ? "paused for live" : needsGesture ? "tap sound" : isRadioPlaying ? "playing" : "tuning"}
-          </p>
-        </div>
+      <section
+        className="radio-widget w-36 shrink-0 rounded-md border border-ping-black/10 bg-ping-surface/90 p-1.5 text-ping-ink shadow-line backdrop-blur-md sm:w-44"
+        aria-label="Radio ping controls"
+        title={!isRadioFallbackActive ? "Radio paused for live stream" : needsGesture ? "Tap play to enable radio" : "Radio ping"}
+      >
         <div className="grid grid-cols-3 gap-1.5">
           <button
             type="button"
             onClick={goToPrevious}
             disabled={controlsDisabled}
-            className="grid h-8 place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-not-allowed disabled:opacity-35"
+            className="grid h-7 place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-not-allowed disabled:opacity-35 sm:h-8"
             aria-label="Previous radio track"
             title="Previous"
           >
@@ -263,7 +261,7 @@ export function BackgroundRadioPlayer() {
             type="button"
             onClick={needsGesture ? enableRadio : toggleRadio}
             disabled={!isReady || !isRadioFallbackActive}
-            className="grid h-8 place-items-center rounded border border-ping-accent/35 bg-ping-accent/12 text-ping-accent transition hover:border-ping-pink/45 hover:text-ping-pink disabled:cursor-not-allowed disabled:opacity-35"
+            className="grid h-7 place-items-center rounded border border-ping-accent/35 bg-ping-accent/12 text-ping-accent transition hover:border-ping-pink/45 hover:text-ping-pink disabled:cursor-not-allowed disabled:opacity-35 sm:h-8"
             aria-label={isRadioPlaying ? "Pause radio" : "Play radio"}
             title={isRadioPlaying ? "Pause" : "Play"}
           >
@@ -273,7 +271,7 @@ export function BackgroundRadioPlayer() {
             type="button"
             onClick={goToNext}
             disabled={controlsDisabled}
-            className="grid h-8 place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-not-allowed disabled:opacity-35"
+            className="grid h-7 place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-not-allowed disabled:opacity-35 sm:h-8"
             aria-label="Next radio track"
             title="Next"
           >

@@ -185,14 +185,14 @@ export function AppShell() {
       <div className="relative z-10 min-h-dvh">
         <div className="flex w-full flex-col">
           <div className="grid flex-1 gap-3 p-3 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-[calc(5.25rem+env(safe-area-inset-bottom))] sm:gap-4 sm:p-4 sm:pt-[calc(1rem+env(safe-area-inset-top))] sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:grid-cols-[minmax(0,1fr)_24rem] xl:gap-4 xl:p-4 2xl:grid-cols-[minmax(0,1fr)_25rem]">
-            <div className="flex min-w-0 items-start justify-between gap-3 py-1 xl:col-span-2">
-              <div className="flex min-w-0 items-center justify-start gap-3">
-                <PingGlyph className="size-8 shrink-0" />
-                <PingWordmark compact />
-              </div>
-              <BackgroundRadioPlayer />
-            </div>
             <div className="min-w-0 space-y-4">
+              <div className="flex min-w-0 items-start justify-between gap-3 py-1">
+                <div className="flex min-w-0 items-center justify-start gap-3">
+                  <PingGlyph className="size-8 shrink-0" />
+                  <PingWordmark compact />
+                </div>
+                <BackgroundRadioPlayer />
+              </div>
               <TopStatus />
               {activeAnnouncement ? (
                 <aside className="rounded-md border border-ping-pink/20 bg-ping-softPink/10 px-4 py-3 font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-ping-ink/65">

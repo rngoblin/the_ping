@@ -1,6 +1,5 @@
 "use client";
 
-import { Radio } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 import { ReactionPulses } from "@/components/live/ReactionBar";
 import { VenueAtmosphere } from "@/components/live/VenueAtmosphere";
@@ -31,10 +30,6 @@ export function LivePlayer() {
                 <span className="text-ping-accent/70">/</span>
                 <span>{currentLive.genre}</span>
               </p>
-            </div>
-            <div className="mt-2 flex items-center gap-2 rounded-full border border-ping-bg/20 bg-ping-bg/10 px-4 py-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ping-bg/65 backdrop-blur-md">
-              <Radio size={13} />
-              idle broadcast / persistent room signal
             </div>
           </div>
         </div>
