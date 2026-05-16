@@ -6,6 +6,7 @@ import type {
   ReactionInput,
   RealtimeAdapter,
   RoomMessageCallback,
+  RoomMessageStatusCallback,
   RoomMessageInput
 } from "@/services/realtime/types";
 import type { ChatMessage } from "@/data/messages";
@@ -30,11 +31,13 @@ const emitMessages = (roomId: string) => {
 };
 
 export const mockRealtime: RealtimeAdapter = {
-  subscribeToRoomMessages: (roomId, callback) => {
+  subscribeToRoomMessages: (roomId, callback, statusCallback?: RoomMessageStatusCallback) => {
     const listeners = messageListeners.get(roomId) ?? new Set<RoomMessageCallback>();
     listeners.add(callback);
     messageListeners.set(roomId, listeners);
+    statusCallback?.("loading");
     callback(messageState[roomId] ?? []);
+    statusCallback?.("ready");
 
     return () => {
       listeners.delete(callback);

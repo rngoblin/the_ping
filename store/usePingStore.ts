@@ -25,6 +25,7 @@ export type ReactionPulse = {
 
 export type MobilePanel = "none" | "rooms" | "schedule" | "vibe";
 export type ThemeMode = "daylight" | "night";
+export type ChatStatus = "idle" | "loading" | "ready" | "error";
 
 export type LocalUserSession = {
   userId: string;
@@ -56,6 +57,7 @@ type PingStore = {
   rooms: typeof rooms;
   schedule: ScheduleAct[];
   messagesByRoom: Record<string, ChatMessage[]>;
+  chatStatusByRoom: Record<string, { status: ChatStatus; error?: string }>;
   moderationActions: ModerationAction[];
   hiddenMessageIds: string[];
   bannedUserIds: string[];
@@ -83,6 +85,7 @@ type PingStore = {
   applyHostEventState: (state: HostEventState | null) => void;
   setActiveAnnouncement: (announcement: HostAnnouncement | null) => void;
   setRoomMessages: (roomId: string, messages: ChatMessage[]) => void;
+  setRoomChatStatus: (roomId: string, status: ChatStatus, error?: string) => void;
   setModerationActions: (actions: ModerationAction[]) => void;
   applyModerationAction: (action: ModerationAction) => void;
   setRoomPresence: (roomId: string, presence: PresenceState) => void;
@@ -220,6 +223,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
   rooms: rooms.filter((room) => activeEvent.enabledRoomIds.includes(room.id)),
   schedule: activeEvent.schedule,
   messagesByRoom: initialMessages,
+  chatStatusByRoom: {},
   moderationActions: [],
   hiddenMessageIds: [],
   bannedUserIds: [],
@@ -391,6 +395,13 @@ export const usePingStore = create<PingStore>((set, get) => ({
       messagesByRoom: {
         ...state.messagesByRoom,
         [roomId]: mergeRoomMessages(messages)
+      }
+    })),
+  setRoomChatStatus: (roomId, status, error) =>
+    set((state) => ({
+      chatStatusByRoom: {
+        ...state.chatStatusByRoom,
+        [roomId]: { status, error }
       }
     })),
   setModerationActions: (actions) =>

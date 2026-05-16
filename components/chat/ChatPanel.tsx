@@ -14,6 +14,8 @@ export function ChatPanel() {
   const activeRoomId = usePingStore((state) => state.activeRoomId);
   const hiddenMessageIds = usePingStore((state) => state.hiddenMessageIds);
   const roomMessages = usePingStore((state) => state.messagesByRoom[activeRoomId] ?? emptyMessages);
+  const chatStatus = usePingStore((state) => state.chatStatusByRoom[activeRoomId]?.status ?? "idle");
+  const chatError = usePingStore((state) => state.chatStatusByRoom[activeRoomId]?.error);
   const messages = useMemo(
     () => roomMessages.filter((message) => !hiddenMessageIds.includes(message.id)).slice(-80),
     [hiddenMessageIds, roomMessages]
@@ -48,7 +50,19 @@ export function ChatPanel() {
       </div>
 
       <div ref={scrollRef} className="soft-scroll min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
-        {messages.length ? (
+        {chatStatus === "loading" && !messages.length ? (
+          <div className="grid min-h-full place-items-center py-10 text-center">
+            <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/40">loading chat history...</p>
+          </div>
+        ) : chatStatus === "error" && !messages.length ? (
+          <div className="grid min-h-full place-items-center py-10 text-center">
+            <div className="max-w-xs">
+              <div className="mx-auto mb-4 h-px w-24 bg-ping-softPink/45" />
+              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ping-softPink">failed to load chat history.</p>
+              <p className="mt-3 text-sm leading-relaxed text-ping-ink/45">{chatError ?? "try refreshing the room."}</p>
+            </div>
+          </div>
+        ) : messages.length ? (
           messages.map((message) => <ChatMessage key={message.id} message={message} />)
         ) : (
           <div className="grid min-h-full place-items-center py-10 text-center">

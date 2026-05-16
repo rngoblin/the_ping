@@ -1,14 +1,16 @@
 "use client";
 
-import { useEffect, useState, type CSSProperties } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ChatPanel } from "@/components/chat/ChatPanel";
 import { PingGlyph } from "@/components/brand/PingGlyph";
 import { PingWordmark } from "@/components/brand/PingWordmark";
+import { TestEventBanner } from "@/components/event/TestEventBanner";
 import { PixelSigil } from "@/components/identity/PixelSigil";
 import { BackgroundRadioPlayer } from "@/components/live/BackgroundRadioPlayer";
 import { LivePlayer } from "@/components/live/LivePlayer";
 import { RoomList } from "@/components/rooms/RoomList";
+import { PeopleHere } from "@/components/rooms/PeopleHere";
 import { RoomSwitcher } from "@/components/rooms/RoomSwitcher";
 import { RoomVibe } from "@/components/rooms/RoomVibe";
 import { BottomSheet } from "@/components/shell/BottomSheet";
@@ -24,6 +26,8 @@ import { createPresenceUser } from "@/store/usePingStore";
 import { subscribeToHostAnnouncement, subscribeToHostEventState } from "@/services/host/hostControls";
 import { subscribeToModerationActions } from "@/services/host/moderation";
 import { FeedbackButton, FeedbackModal } from "@/components/shell/FeedbackModal";
+import { tomorrowTestEvent } from "@/data/testEvent";
+import { debugPing } from "@/utils/debugPing";
 
 export function AppShell() {
   const [isScheduleOpen, setIsScheduleOpen] = useState(false);
@@ -41,6 +45,7 @@ export function AppShell() {
   const applyHostEventState = usePingStore((state) => state.applyHostEventState);
   const setActiveAnnouncement = usePingStore((state) => state.setActiveAnnouncement);
   const setRoomMessages = usePingStore((state) => state.setRoomMessages);
+  const setRoomChatStatus = usePingStore((state) => state.setRoomChatStatus);
   const setRoomPresence = usePingStore((state) => state.setRoomPresence);
   const setModerationActions = usePingStore((state) => state.setModerationActions);
   const setReactionCount = usePingStore((state) => state.setReactionCount);
@@ -55,6 +60,7 @@ export function AppShell() {
   const presenceByRoom = usePingStore((state) => state.presenceByRoom);
   const mobilePanel = usePingStore((state) => state.mobilePanel);
   const setMobilePanel = usePingStore((state) => state.setMobilePanel);
+  const setActiveRoom = usePingStore((state) => state.setActiveRoom);
   const noteRoomEntry = usePingStore((state) => state.noteRoomEntry);
   const [showRecognizedSignal, setShowRecognizedSignal] = useState(false);
   const activeRoom = rooms.find((room) => room.id === activeRoomId) ?? rooms[0];
@@ -64,6 +70,18 @@ export function AppShell() {
     setMobilePanel("none");
     setIsScheduleOpen(true);
   };
+  const returnHome = useCallback(() => {
+    setMobilePanel("none");
+    setActiveRoom("main-floor");
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [setActiveRoom, setMobilePanel]);
+  const joinTestEvent = useCallback(() => {
+    setMobilePanel("none");
+    setActiveRoom(tomorrowTestEvent.roomId);
+    window.requestAnimationFrame(() => {
+      document.getElementById("rooms-section")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  }, [setActiveRoom, setMobilePanel]);
 
   useEffect(() => {
     hydrateLocalSession();
@@ -102,6 +120,7 @@ export function AppShell() {
       return;
     }
 
+    debugPing("room/session state", { activeRoomId, userId: localUser.userId, nickname: localUser.nickname });
     noteRoomEntry(activeRoomId);
   }, [activeRoomId, localUser, noteRoomEntry]);
 
@@ -111,9 +130,16 @@ export function AppShell() {
     }
 
     const adapter = getRealtimeAdapter();
-    const unsubscribeMessages = adapter.subscribeToRoomMessages(activeRoomId, (messages) => {
-      setRoomMessages(activeRoomId, messages);
-    });
+    setRoomChatStatus(activeRoomId, "loading");
+    const unsubscribeMessages = adapter.subscribeToRoomMessages(
+      activeRoomId,
+      (messages) => {
+        setRoomMessages(activeRoomId, messages);
+      },
+      (status, error) => {
+        setRoomChatStatus(activeRoomId, status, error);
+      }
+    );
     const unsubscribeReactionCount = adapter.subscribeToReactionCount(activeRoomId, (count) => {
       setReactionCount(activeRoomId, count);
     });
@@ -122,7 +148,7 @@ export function AppShell() {
       unsubscribeMessages();
       unsubscribeReactionCount();
     };
-  }, [activeRoomId, isPageVisible, setReactionCount, setRoomMessages]);
+  }, [activeRoomId, isPageVisible, setReactionCount, setRoomChatStatus, setRoomMessages]);
 
   useEffect(() => {
     if (!isPageVisible) {
@@ -255,13 +281,20 @@ export function AppShell() {
           <div className="grid flex-1 gap-3 p-3 pt-[calc(0.75rem+env(safe-area-inset-top))] pb-[calc(5.25rem+env(safe-area-inset-bottom))] sm:gap-4 sm:p-4 sm:pt-[calc(1rem+env(safe-area-inset-top))] sm:pb-[calc(5.5rem+env(safe-area-inset-bottom))] xl:grid-cols-[minmax(0,1fr)_24rem] xl:gap-4 xl:p-4 2xl:grid-cols-[minmax(0,1fr)_25rem]">
             <div className="min-w-0 space-y-4">
               <div className="flex min-w-0 items-start justify-between gap-3 py-1">
-                <div className="flex min-w-0 items-center justify-start gap-3">
+                <button
+                  type="button"
+                  onClick={returnHome}
+                  className="flex min-w-0 cursor-pointer items-center justify-start gap-3 text-left"
+                  aria-label="Return to start page"
+                  title="Return to start page"
+                >
                   <PingGlyph className="size-8 shrink-0" />
                   <PingWordmark compact />
-                </div>
+                </button>
                 <BackgroundRadioPlayer />
               </div>
               <TopStatus />
+              <TestEventBanner onJoin={joinTestEvent} />
               {activeAnnouncement ? (
                 <aside className="rounded-md border border-ping-pink/20 bg-ping-softPink/10 px-4 py-3 font-mono text-[10px] uppercase leading-relaxed tracking-[0.12em] text-ping-ink/65">
                   <span className="text-ping-pink">host signal</span>
@@ -289,19 +322,7 @@ export function AppShell() {
               <section id="vibe-section" className="scroll-mt-6">
                 <RoomVibe />
               </section>
-              <section className="rounded-lg border border-ping-black/10 bg-ping-surface/80 p-4 shadow-line">
-                <h2 className="mb-4 font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/50">people here</h2>
-                <div className="flex -space-x-2">
-                  {(activePresence?.avatars ?? []).map((avatar, index) => (
-                    <div key={`${avatar}-${index}`} className="grid size-9 place-items-center rounded-md border-2 border-ping-surface bg-ping-muted/75 p-1 shadow-line">
-                      <PixelSigil seed={avatar} className="size-full" title="presence signal sigil" />
-                    </div>
-                  ))}
-                </div>
-                <p className="mt-4 text-sm leading-relaxed text-ping-ink/55">
-                  {`${(activePresence?.count ?? 0).toLocaleString()} inside this room right now.`}
-                </p>
-              </section>
+              <PeopleHere presence={activePresence} />
             </aside>
           </div>
         </div>
@@ -315,6 +336,9 @@ export function AppShell() {
       </BottomSheet>
       <BottomSheet isOpen={mobilePanel === "vibe"} title="room vibe" onClose={() => setMobilePanel("none")}>
         <RoomVibe />
+        <div className="mt-4">
+          <PeopleHere presence={activePresence} />
+        </div>
       </BottomSheet>
       <ScheduleDrawer isOpen={isScheduleOpen} onClose={() => setIsScheduleOpen(false)} />
       {activeEvent?.feedbackUrl ? (

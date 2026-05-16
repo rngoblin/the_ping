@@ -1,8 +1,9 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useMemo, useRef, useState } from "react";
 import { PingGlyph } from "@/components/brand/PingGlyph";
 import { PingWordmark } from "@/components/brand/PingWordmark";
+import { TestEventBanner } from "@/components/event/TestEventBanner";
 import { usePingStore } from "@/store/usePingStore";
 import { ThemeSwitch } from "@/components/shell/ThemeSwitch";
 import { PixelSigil } from "@/components/identity/PixelSigil";
@@ -13,6 +14,7 @@ export function EntryGate() {
   const [nickname, setNickname] = useState("");
   const [inviteCode, setInviteCode] = useState("");
   const [selectedVariant, setSelectedVariant] = useState(0);
+  const nicknameRef = useRef<HTMLInputElement | null>(null);
   const enterSession = usePingStore((state) => state.enterSession);
   const currentLive = usePingStore((state) => state.currentLive);
   const featureFlags = usePingStore((state) => state.featureFlags);
@@ -48,10 +50,15 @@ export function EntryGate() {
           {currentLive.title} is tuned for one shared stream, a few rooms, and people inside.
         </p>
 
+        <div className="mt-6">
+          <TestEventBanner compact onJoin={() => nicknameRef.current?.focus()} />
+        </div>
+
         <form onSubmit={handleSubmit} className="mt-8 space-y-3">
           <label className="block">
             <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/45">nickname</span>
             <input
+              ref={nicknameRef}
               value={nickname}
               onChange={(event) => setNickname(event.target.value)}
               placeholder="how the room sees you"

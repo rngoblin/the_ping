@@ -11,8 +11,10 @@ import type {
   ReactionInput,
   RealtimeAdapter,
   RoomMessageCallback,
+  RoomMessageStatusCallback,
   RoomMessageInput
 } from "@/services/realtime/types";
+import { debugPing } from "@/utils/debugPing";
 import { createSigilSeed } from "@/utils/generateSigil";
 
 type MessageRow = {
@@ -96,6 +98,20 @@ const makeEmptyPresence = (roomId: string): PresenceState => ({
   users: []
 });
 
+const dedupePresenceUsers = (users: PresenceUser[]) => {
+  const byUserId = new Map<string, PresenceUser>();
+
+  users.forEach((user) => {
+    const current = byUserId.get(user.userId);
+
+    if (!current || new Date(user.joinedAt).getTime() >= new Date(current.joinedAt).getTime()) {
+      byUserId.set(user.userId, user);
+    }
+  });
+
+  return [...byUserId.values()].sort((a, b) => a.nickname.localeCompare(b.nickname));
+};
+
 const fetchRoomMessages = async (roomId: string) => {
   const supabase = getSupabaseClient();
 
@@ -150,7 +166,7 @@ const fetchPresenceSnapshotCounts = async (roomIds: string[]) => {
 };
 
 export const supabaseRealtime: RealtimeAdapter = {
-  subscribeToRoomMessages: (roomId: string, callback: RoomMessageCallback) => {
+  subscribeToRoomMessages: (roomId: string, callback: RoomMessageCallback, statusCallback?: RoomMessageStatusCallback) => {
     const supabase = getSupabaseClient();
 
     if (!supabase) {
@@ -163,6 +179,8 @@ export const supabaseRealtime: RealtimeAdapter = {
 
     const emit = () => callback([...messages]);
     const syncMessages = () => {
+      statusCallback?.("loading");
+      debugPing("chat history fetch start", { roomId });
       void fetchRoomMessages(roomId)
         .then((nextMessages) => {
           if (!isActive) {
@@ -170,10 +188,14 @@ export const supabaseRealtime: RealtimeAdapter = {
           }
 
           messages = uniqMessages(nextMessages);
+          debugPing("chat history fetch success", { roomId, count: messages.length });
           emit();
+          statusCallback?.("ready");
         })
         .catch((error: Error) => {
           console.warn("PING Supabase messages fetch failed", error.message);
+          debugPing("chat history fetch error", { roomId, error: error.message });
+          statusCallback?.("error", error.message);
         });
     };
 
@@ -199,6 +221,7 @@ export const supabaseRealtime: RealtimeAdapter = {
         }
       )
       .subscribe((status) => {
+        debugPing("message subscription status", { roomId, status });
         if (status === "SUBSCRIBED") {
           syncMessages();
         }
@@ -266,10 +289,13 @@ export const supabaseRealtime: RealtimeAdapter = {
 
     const emitPresence = () => {
       const state = channel.presenceState<PresenceUser>();
-      const users = Object.values(state)
+      const users = dedupePresenceUsers(
+        Object.values(state)
         .flat()
-        .filter((item) => item.roomId === roomId);
+          .filter((item) => item.roomId === roomId)
+      );
 
+      debugPing("presence sync", { roomId, count: users.length, users: users.map((item) => item.nickname) });
       callback({
         roomId,
         count: users.length,
@@ -279,6 +305,7 @@ export const supabaseRealtime: RealtimeAdapter = {
     };
 
     channel.on("presence", { event: "sync" }, emitPresence).subscribe((status) => {
+      debugPing("presence subscription status", { roomId, status, tracking: Boolean(user) });
       if (status === "SUBSCRIBED") {
         if (user) {
           void channel.track(user);
@@ -402,6 +429,7 @@ export const supabaseRealtime: RealtimeAdapter = {
         }
       )
       .subscribe((status) => {
+        debugPing("reaction count subscription status", { roomId, status });
         if (status === "SUBSCRIBED") {
           syncCount();
         }
