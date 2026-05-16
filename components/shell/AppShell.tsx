@@ -6,6 +6,7 @@ import { ChatPanel } from "@/components/chat/ChatPanel";
 import { PingGlyph } from "@/components/brand/PingGlyph";
 import { PingWordmark } from "@/components/brand/PingWordmark";
 import { PixelSigil } from "@/components/identity/PixelSigil";
+import { BackgroundRadioPlayer } from "@/components/live/BackgroundRadioPlayer";
 import { LivePlayer } from "@/components/live/LivePlayer";
 import { ReactionBar } from "@/components/live/ReactionBar";
 import { RoomList } from "@/components/rooms/RoomList";
@@ -164,6 +165,7 @@ export function AppShell() {
         <div className="ambient-drift" />
         <div className="ambient-grid" />
       </div>
+      <BackgroundRadioPlayer />
       <AnimatePresence mode="wait">
         <motion.div
           key={activeRoomId}
