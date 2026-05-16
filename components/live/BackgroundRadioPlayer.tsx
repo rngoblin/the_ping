@@ -91,7 +91,6 @@ export function BackgroundRadioPlayer() {
   const [isReady, setIsReady] = useState(false);
   const [needsGesture, setNeedsGesture] = useState(false);
   const [isRadioPlaying, setIsRadioPlaying] = useState(false);
-  const [volume, setVolume] = useState(defaultVolume);
 
   const isLiveStreamActive = useMemo(
     () => currentLive.status === "live" && currentLive.streamType !== "placeholder" && Boolean(currentLive.embedUrl || currentLive.streamUrl),
@@ -119,6 +118,7 @@ export function BackgroundRadioPlayer() {
           list: playlistId,
           listType: "playlist",
           modestbranding: 1,
+          origin: window.location.origin,
           playsinline: 1,
           rel: 0
         },
@@ -168,7 +168,7 @@ export function BackgroundRadioPlayer() {
       return;
     }
 
-    player.setVolume(volume);
+    player.setVolume(defaultVolume);
     player.playVideo();
 
     if (blockedCheckRef.current) {
@@ -182,11 +182,7 @@ export function BackgroundRadioPlayer() {
         setNeedsGesture(true);
       }
     }, 1400);
-  }, [isRadioFallbackActive, isReady, volume]);
-
-  useEffect(() => {
-    playerRef.current?.setVolume(volume);
-  }, [volume]);
+  }, [isRadioFallbackActive, isReady]);
 
   const enableRadio = () => {
     const player = playerRef.current;
@@ -195,7 +191,7 @@ export function BackgroundRadioPlayer() {
       return;
     }
 
-    player.setVolume(volume);
+    player.setVolume(defaultVolume);
     player.playVideo();
     setNeedsGesture(false);
   };
@@ -213,7 +209,7 @@ export function BackgroundRadioPlayer() {
       return;
     }
 
-    player.setVolume(volume);
+    player.setVolume(defaultVolume);
     player.playVideo();
     setNeedsGesture(false);
   };
@@ -242,16 +238,16 @@ export function BackgroundRadioPlayer() {
         <div ref={containerRef} />
       </div>
       <section
-        className="radio-widget w-36 shrink-0 rounded-md border border-ping-black/10 bg-ping-surface/90 p-1.5 text-ping-ink shadow-line backdrop-blur-md sm:w-44"
+        className="radio-widget h-9 w-32 shrink-0 rounded-md border border-ping-black/10 bg-ping-surface/90 p-1 text-ping-ink shadow-line backdrop-blur-md sm:w-40"
         aria-label="Radio ping controls"
         title={!isRadioFallbackActive ? "Radio paused for live stream" : needsGesture ? "Tap play to enable radio" : "Radio ping"}
       >
-        <div className="grid grid-cols-3 gap-1.5">
+        <div className="grid h-full grid-cols-3 gap-1">
           <button
             type="button"
             onClick={goToPrevious}
             disabled={controlsDisabled}
-            className="grid h-7 place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-not-allowed disabled:opacity-35 sm:h-8"
+            className="grid h-full place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-default disabled:opacity-35"
             aria-label="Previous radio track"
             title="Previous"
           >
@@ -261,7 +257,7 @@ export function BackgroundRadioPlayer() {
             type="button"
             onClick={needsGesture ? enableRadio : toggleRadio}
             disabled={!isReady || !isRadioFallbackActive}
-            className="grid h-7 place-items-center rounded border border-ping-accent/35 bg-ping-accent/12 text-ping-accent transition hover:border-ping-pink/45 hover:text-ping-pink disabled:cursor-not-allowed disabled:opacity-35 sm:h-8"
+            className="grid h-full place-items-center rounded border border-ping-accent/35 bg-ping-accent/12 text-ping-accent transition hover:border-ping-pink/45 hover:text-ping-pink disabled:cursor-default disabled:opacity-35"
             aria-label={isRadioPlaying ? "Pause radio" : "Play radio"}
             title={isRadioPlaying ? "Pause" : "Play"}
           >
@@ -271,22 +267,13 @@ export function BackgroundRadioPlayer() {
             type="button"
             onClick={goToNext}
             disabled={controlsDisabled}
-            className="grid h-7 place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-not-allowed disabled:opacity-35 sm:h-8"
+            className="grid h-full place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-default disabled:opacity-35"
             aria-label="Next radio track"
             title="Next"
           >
             <SkipForward size={15} fill="currentColor" />
           </button>
         </div>
-        <input
-          aria-label="Radio volume"
-          type="range"
-          min="0"
-          max="100"
-          value={volume}
-          onChange={(event) => setVolume(Number(event.target.value))}
-          className="mt-2 h-1 w-full accent-ping-accent"
-        />
       </section>
     </>
   );
