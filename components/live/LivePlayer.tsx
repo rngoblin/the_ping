@@ -1,6 +1,6 @@
 "use client";
 
-import { Radio, Satellite } from "lucide-react";
+import { Radio } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 import { ReactionPulses } from "@/components/live/ReactionBar";
 import { VenueAtmosphere } from "@/components/live/VenueAtmosphere";
@@ -16,16 +16,6 @@ export function LivePlayer() {
       <div className="venue-still relative isolate min-h-[18.75rem] sm:min-h-[22rem] md:min-h-[30rem]">
         <VenueAtmosphere />
         <div className="pointer-events-none absolute inset-0 z-[3] bg-[radial-gradient(circle_at_50%_32%,rgba(168,255,96,0.16),transparent_18rem),linear-gradient(180deg,rgba(9,13,11,0.08),rgba(9,13,11,0.72))]" />
-        <div className="pointer-events-none absolute inset-x-6 top-4 z-[7] flex items-center justify-between gap-3 sm:inset-x-8 sm:top-6">
-          <div className="flex items-center gap-2 rounded-full border border-ping-accent/30 bg-ping-black/42 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ping-accent shadow-[0_0_28px_rgba(168,255,96,0.12)] backdrop-blur-md">
-            <span className="size-1.5 rounded-full bg-ping-accent shadow-[0_0_14px_currentColor]" />
-            radio ping
-          </div>
-          <div className="hidden items-center gap-2 rounded-full border border-ping-bg/15 bg-ping-black/32 px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ping-bg/55 backdrop-blur-md sm:flex">
-            <Satellite size={12} />
-            {isLiveStreamActive ? "radio paused" : "fallback on"}
-          </div>
-        </div>
         <ReactionPulses />
 
         <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center p-8 text-center text-ping-bg">

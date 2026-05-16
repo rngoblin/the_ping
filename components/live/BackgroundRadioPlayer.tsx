@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Radio } from "lucide-react";
+import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 
 const playlistId = "PLk1JTFCHeBhgiVqKUvx_2Pjogos7iTyZq";
@@ -10,6 +10,8 @@ const defaultVolume = 36;
 type YouTubePlayer = {
   playVideo: () => void;
   pauseVideo: () => void;
+  nextVideo: () => void;
+  previousVideo: () => void;
   setVolume: (volume: number) => void;
   setLoop?: (loop: boolean) => void;
   destroy: () => void;
@@ -89,6 +91,7 @@ export function BackgroundRadioPlayer() {
   const [isReady, setIsReady] = useState(false);
   const [needsGesture, setNeedsGesture] = useState(false);
   const [isRadioPlaying, setIsRadioPlaying] = useState(false);
+  const [volume, setVolume] = useState(defaultVolume);
 
   const isLiveStreamActive = useMemo(
     () => currentLive.status === "live" && currentLive.streamType !== "placeholder" && Boolean(currentLive.embedUrl || currentLive.streamUrl),
@@ -165,7 +168,7 @@ export function BackgroundRadioPlayer() {
       return;
     }
 
-    player.setVolume(defaultVolume);
+    player.setVolume(volume);
     player.playVideo();
 
     if (blockedCheckRef.current) {
@@ -179,7 +182,11 @@ export function BackgroundRadioPlayer() {
         setNeedsGesture(true);
       }
     }, 1400);
-  }, [isRadioFallbackActive, isReady]);
+  }, [isRadioFallbackActive, isReady, volume]);
+
+  useEffect(() => {
+    playerRef.current?.setVolume(volume);
+  }, [volume]);
 
   const enableRadio = () => {
     const player = playerRef.current;
@@ -188,27 +195,101 @@ export function BackgroundRadioPlayer() {
       return;
     }
 
-    player.setVolume(defaultVolume);
+    player.setVolume(volume);
     player.playVideo();
     setNeedsGesture(false);
   };
+
+  const toggleRadio = () => {
+    const player = playerRef.current;
+
+    if (!player || !isRadioFallbackActive) {
+      return;
+    }
+
+    if (isRadioPlaying) {
+      player.pauseVideo();
+      setIsRadioPlaying(false);
+      return;
+    }
+
+    player.setVolume(volume);
+    player.playVideo();
+    setNeedsGesture(false);
+  };
+
+  const goToPrevious = () => {
+    if (!isRadioFallbackActive) {
+      return;
+    }
+
+    playerRef.current?.previousVideo();
+  };
+
+  const goToNext = () => {
+    if (!isRadioFallbackActive) {
+      return;
+    }
+
+    playerRef.current?.nextVideo();
+  };
+
+  const controlsDisabled = !isReady || !isRadioFallbackActive;
 
   return (
     <>
       <div aria-hidden="true" className="pointer-events-none fixed -left-10 top-0 h-px w-px overflow-hidden opacity-0">
         <div ref={containerRef} />
       </div>
-      <button
-        type="button"
-        onClick={needsGesture ? enableRadio : undefined}
-        className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] left-3 z-40 flex max-w-[calc(100vw-9.5rem)] items-center gap-2 rounded-full border border-ping-accent/35 bg-ping-surface/92 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ping-accent shadow-[0_0_24px_rgba(168,255,96,0.12)] backdrop-blur-md transition hover:border-ping-pink/40 hover:text-ping-pink sm:bottom-4 sm:left-4"
-        aria-label={needsGesture ? "Enable radio ping" : "Radio ping status"}
-      >
-        <Radio size={13} />
-        <span>radio ping</span>
-        <span className="text-ping-ink/35">/</span>
-        <span className="truncate">{!isRadioFallbackActive ? "paused for live" : needsGesture ? "tap to enable sound" : isRadioPlaying ? "playing" : "tuning"}</span>
-      </button>
+      <section className="radio-widget w-44 shrink-0 rounded-md border border-ping-black/10 bg-ping-surface/90 p-2 text-ping-ink shadow-line backdrop-blur-md sm:w-56">
+        <div className="mb-1.5 flex items-center justify-between gap-2">
+          <p className="truncate font-mono text-[9px] uppercase tracking-[0.16em] text-ping-accent">radio ping</p>
+          <p className="truncate font-mono text-[8px] uppercase tracking-[0.12em] text-ping-ink/42">
+            {!isRadioFallbackActive ? "paused for live" : needsGesture ? "tap sound" : isRadioPlaying ? "playing" : "tuning"}
+          </p>
+        </div>
+        <div className="grid grid-cols-3 gap-1.5">
+          <button
+            type="button"
+            onClick={goToPrevious}
+            disabled={controlsDisabled}
+            className="grid h-8 place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-not-allowed disabled:opacity-35"
+            aria-label="Previous radio track"
+            title="Previous"
+          >
+            <SkipBack size={15} fill="currentColor" />
+          </button>
+          <button
+            type="button"
+            onClick={needsGesture ? enableRadio : toggleRadio}
+            disabled={!isReady || !isRadioFallbackActive}
+            className="grid h-8 place-items-center rounded border border-ping-accent/35 bg-ping-accent/12 text-ping-accent transition hover:border-ping-pink/45 hover:text-ping-pink disabled:cursor-not-allowed disabled:opacity-35"
+            aria-label={isRadioPlaying ? "Pause radio" : "Play radio"}
+            title={isRadioPlaying ? "Pause" : "Play"}
+          >
+            {isRadioPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
+          </button>
+          <button
+            type="button"
+            onClick={goToNext}
+            disabled={controlsDisabled}
+            className="grid h-8 place-items-center rounded border border-ping-black/10 bg-ping-bg/70 text-ping-ink transition hover:border-ping-accent/45 hover:text-ping-accent disabled:cursor-not-allowed disabled:opacity-35"
+            aria-label="Next radio track"
+            title="Next"
+          >
+            <SkipForward size={15} fill="currentColor" />
+          </button>
+        </div>
+        <input
+          aria-label="Radio volume"
+          type="range"
+          min="0"
+          max="100"
+          value={volume}
+          onChange={(event) => setVolume(Number(event.target.value))}
+          className="mt-2 h-1 w-full accent-ping-accent"
+        />
+      </section>
     </>
   );
 }

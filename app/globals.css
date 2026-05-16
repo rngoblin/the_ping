@@ -527,6 +527,20 @@ button {
   background-color: rgba(138, 79, 99, 0.2);
 }
 
+:root[data-theme="night"] .radio-widget {
+  border-color: rgba(42, 54, 49, 0.92);
+  background:
+    linear-gradient(180deg, rgba(29, 38, 34, 0.94), rgba(9, 13, 11, 0.96)),
+    #111715;
+  box-shadow:
+    0 0 0 1px rgba(168, 255, 96, 0.05),
+    0 14px 34px rgba(0, 0, 0, 0.32);
+}
+
+:root[data-theme="night"] .radio-widget .bg-ping-bg\/70 {
+  background-color: rgba(9, 13, 11, 0.72);
+}
+
 :root[data-theme="night"] .room-switcher button {
   border-color: rgba(42, 54, 49, 0.86);
   background: rgba(17, 23, 21, 0.92);
