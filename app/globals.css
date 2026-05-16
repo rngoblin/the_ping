@@ -187,17 +187,17 @@ button {
     linear-gradient(var(--noise-a) 1px, transparent 1px),
     linear-gradient(90deg, var(--noise-b) 1px, transparent 1px);
   background-size: 34px 34px, 34px 34px;
-  mix-blend-mode: multiply;
+  mix-blend-mode: normal;
 }
 
 :root[data-theme="night"] .noise {
-  opacity: 0.24;
+  opacity: 0.16;
   background-image:
     linear-gradient(rgba(230, 236, 232, 0.014) 1px, transparent 1px),
     linear-gradient(90deg, rgba(230, 236, 232, 0.01) 1px, transparent 1px),
     radial-gradient(circle at 50% 50%, rgba(168, 255, 96, 0.018), transparent 1px);
   background-size: 36px 36px, 36px 36px, 7px 7px;
-  mix-blend-mode: screen;
+  mix-blend-mode: normal;
 }
 
 .ambient-motion {
@@ -211,13 +211,13 @@ button {
 .ambient-drift {
   position: absolute;
   inset: -18%;
-  opacity: 0.42;
+  opacity: 0.26;
   background:
     radial-gradient(circle at 18% 22%, var(--room-tint, rgba(94, 122, 100, 0.16)), transparent 21rem),
     radial-gradient(circle at 82% 68%, rgba(183, 194, 178, 0.18), transparent 24rem),
     radial-gradient(circle at 50% 0%, rgba(244, 244, 242, 0.2), transparent 27rem);
-  filter: blur(18px);
-  animation: ambient-drift 42s ease-in-out infinite alternate;
+  filter: none;
+  transform: translate3d(0, 0, 0);
 }
 
 .ambient-grid {
@@ -228,11 +228,11 @@ button {
     linear-gradient(rgba(8, 15, 12, 0.12) 1px, transparent 1px),
     linear-gradient(90deg, rgba(8, 15, 12, 0.08) 1px, transparent 1px);
   background-size: 72px 72px;
-  animation: ambient-grid 68s linear infinite;
+  animation: none;
 }
 
 :root[data-theme="night"] .ambient-drift {
-  opacity: 0.32;
+  opacity: 0.18;
   background:
     radial-gradient(circle at 18% 22%, rgba(94, 122, 100, 0.07), transparent 23rem),
     radial-gradient(circle at 82% 70%, rgba(168, 255, 96, 0.025), transparent 22rem),
@@ -285,6 +285,15 @@ button {
 .signal-bar {
   animation: signal 1.4s ease-in-out infinite;
   transform-origin: bottom;
+}
+
+.live-player,
+.chat-panel,
+.room-vibe-panel,
+.radio-widget,
+.room-switcher,
+.soft-scroll {
+  contain: layout paint style;
 }
 
 .signal-bar:nth-child(2) {
@@ -397,16 +406,16 @@ button {
 .venue-haze {
   position: absolute;
   inset: -20%;
-  opacity: 0.44;
+  opacity: 0.24;
   background:
     repeating-linear-gradient(105deg, transparent 0 34px, rgba(244, 244, 242, 0.055) 36px 38px),
     radial-gradient(ellipse at 50% 42%, rgba(244, 244, 242, 0.2), transparent 34rem);
-  filter: blur(12px);
-  animation: drift 14s ease-in-out infinite alternate;
+  filter: none;
+  transform: translate3d(0, 0, 0);
 }
 
 :root[data-theme="night"] .venue-haze {
-  opacity: 0.22;
+  opacity: 0.14;
   background:
     repeating-linear-gradient(105deg, transparent 0 38px, rgba(230, 236, 232, 0.018) 40px 41px),
     radial-gradient(ellipse at 50% 40%, rgba(230, 236, 232, 0.09), transparent 31rem);
@@ -446,7 +455,7 @@ button {
   background:
     linear-gradient(180deg, rgba(244, 244, 242, 0.1), rgba(8, 15, 12, 0.86)),
     var(--room-tint, rgba(94, 122, 100, 0.18));
-  filter: blur(0.4px);
+  filter: none;
   transform: translateY(calc((var(--i) % 3) * 10px));
 }
 
@@ -612,4 +621,41 @@ button {
   .signal-bar {
     animation: none !important;
   }
+}
+
+:root[data-low-power="true"] .noise,
+:root[data-motion="reduced"] .noise,
+:root[data-visibility="hidden"] .noise {
+  opacity: 0.08;
+}
+
+:root[data-low-power="true"] .ambient-motion,
+:root[data-motion="reduced"] .ambient-motion,
+:root[data-visibility="hidden"] .ambient-motion {
+  display: none;
+}
+
+:root[data-low-power="true"] .venue-haze,
+:root[data-motion="reduced"] .venue-haze,
+:root[data-visibility="hidden"] .venue-haze,
+:root[data-low-power="true"] .venue-lines,
+:root[data-motion="reduced"] .venue-lines,
+:root[data-visibility="hidden"] .venue-lines {
+  display: none;
+}
+
+:root[data-low-power="true"] *,
+:root[data-motion="reduced"] *,
+:root[data-visibility="hidden"] * {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
+
+:root[data-low-power="true"] .backdrop-blur-md,
+:root[data-low-power="true"] .backdrop-blur-xl,
+:root[data-motion="reduced"] .backdrop-blur-md,
+:root[data-motion="reduced"] .backdrop-blur-xl {
+  backdrop-filter: none !important;
 }

@@ -80,11 +80,16 @@ export const mockRealtime: RealtimeAdapter = {
     reactionCountListeners.get(reaction.roomId)?.forEach((callback) => callback(reactionCounts[reaction.roomId] ?? 0));
     return reaction;
   },
-  subscribeToReactions: (callback: ReactionCallback) => {
-    reactionListeners.add(callback);
+  subscribeToReactions: (callback: ReactionCallback, roomId?: string) => {
+    const scopedCallback = (reaction: ReactionInput) => {
+      if (!roomId || reaction.roomId === roomId) {
+        callback(reaction);
+      }
+    };
+    reactionListeners.add(scopedCallback);
 
     return () => {
-      reactionListeners.delete(callback);
+      reactionListeners.delete(scopedCallback);
     };
   },
   subscribeToReactionCount: (roomId, callback) => {
@@ -99,5 +104,6 @@ export const mockRealtime: RealtimeAdapter = {
   },
   captureNotifyLead: async () => {
     return;
-  }
+  },
+  fetchPresenceCounts: async (roomIds) => Object.fromEntries(roomIds.map((roomId) => [roomId, 0]))
 };

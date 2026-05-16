@@ -86,9 +86,13 @@ const loadYoutubeIframeApi = () => {
 export function BackgroundRadioPlayer() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const playerRef = useRef<YouTubePlayer | null>(null);
+  const playerPromiseRef = useRef<Promise<YouTubePlayer | null> | null>(null);
   const blockedCheckRef = useRef<number | null>(null);
+  const unloadTimerRef = useRef<number | null>(null);
+  const userEnabledRef = useRef(false);
   const currentLive = usePingStore((state) => state.currentLive);
   const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [needsGesture, setNeedsGesture] = useState(false);
   const [isRadioPlaying, setIsRadioPlaying] = useState(false);
 
@@ -98,78 +102,128 @@ export function BackgroundRadioPlayer() {
   );
   const isRadioFallbackActive = !isLiveStreamActive;
 
-  useEffect(() => {
-    let isMounted = true;
+  const clearUnloadTimer = () => {
+    if (unloadTimerRef.current) {
+      window.clearTimeout(unloadTimerRef.current);
+      unloadTimerRef.current = null;
+    }
+  };
 
-    void loadYoutubeIframeApi().then(() => {
-      if (!isMounted || !containerRef.current || !window.YT?.Player || playerRef.current) {
-        return;
-      }
+  const unloadPlayer = () => {
+    clearUnloadTimer();
 
-      playerRef.current = new window.YT.Player(containerRef.current, {
-        width: "1",
-        height: "1",
-        playerVars: {
-          autoplay: 1,
-          controls: 0,
-          disablekb: 1,
-          fs: 0,
-          iv_load_policy: 3,
-          list: playlistId,
-          listType: "playlist",
-          modestbranding: 1,
-          origin: window.location.origin,
-          playsinline: 1,
-          rel: 0
-        },
-        events: {
-          onReady: (event) => {
-            event.target.setVolume(defaultVolume);
-            event.target.setLoop?.(true);
-            setIsReady(true);
-          },
-          onStateChange: (event) => {
-            if (event.data === window.YT?.PlayerState?.PLAYING) {
-              setIsRadioPlaying(true);
-              setNeedsGesture(false);
-            }
-            if (event.data === window.YT?.PlayerState?.PAUSED) {
-              setIsRadioPlaying(false);
-            }
-          },
-          onError: () => setNeedsGesture(true)
+    if (blockedCheckRef.current) {
+      window.clearTimeout(blockedCheckRef.current);
+      blockedCheckRef.current = null;
+    }
+
+    playerRef.current?.destroy();
+    playerRef.current = null;
+    playerPromiseRef.current = null;
+    setIsReady(false);
+    setIsLoading(false);
+    setIsRadioPlaying(false);
+  };
+
+  const schedulePausedUnload = () => {
+    clearUnloadTimer();
+    unloadTimerRef.current = window.setTimeout(unloadPlayer, 120_000);
+  };
+
+  const ensurePlayer = () => {
+    if (playerRef.current) {
+      return Promise.resolve(playerRef.current);
+    }
+
+    playerPromiseRef.current ??= new Promise<YouTubePlayer | null>((resolve) => {
+      setIsLoading(true);
+
+      void loadYoutubeIframeApi().then(() => {
+        if (!containerRef.current || !window.YT?.Player) {
+          setIsLoading(false);
+          resolve(null);
+          return;
         }
+
+        playerRef.current = new window.YT.Player(containerRef.current, {
+          width: "1",
+          height: "1",
+          playerVars: {
+            autoplay: 0,
+            controls: 0,
+            disablekb: 1,
+            fs: 0,
+            iv_load_policy: 3,
+            list: playlistId,
+            listType: "playlist",
+            modestbranding: 1,
+            origin: window.location.origin,
+            playsinline: 1,
+            rel: 0
+          },
+          events: {
+            onReady: (event) => {
+              event.target.setVolume(defaultVolume);
+              event.target.setLoop?.(true);
+              setIsReady(true);
+              setIsLoading(false);
+              resolve(event.target);
+            },
+            onStateChange: (event) => {
+              if (event.data === window.YT?.PlayerState?.PLAYING) {
+                clearUnloadTimer();
+                setIsRadioPlaying(true);
+                setNeedsGesture(false);
+              }
+              if (event.data === window.YT?.PlayerState?.PAUSED) {
+                setIsRadioPlaying(false);
+                schedulePausedUnload();
+              }
+            },
+            onError: () => {
+              setIsLoading(false);
+              setNeedsGesture(true);
+            }
+          }
+        });
       });
     });
 
-    return () => {
-      isMounted = false;
+    return playerPromiseRef.current;
+  };
 
+  useEffect(
+    () => () => {
       if (blockedCheckRef.current) {
         window.clearTimeout(blockedCheckRef.current);
       }
 
-      playerRef.current?.destroy();
-      playerRef.current = null;
-    };
-  }, []);
+      unloadPlayer();
+    },
+    []
+  );
 
   useEffect(() => {
     const player = playerRef.current;
 
-    if (!isReady || !player) {
+    if (!player) {
       return;
     }
 
     if (!isRadioFallbackActive) {
       player.pauseVideo();
-      setIsRadioPlaying(false);
+      unloadPlayer();
       setNeedsGesture(false);
+      return;
+    }
+
+    if (!userEnabledRef.current || !isReady) {
       return;
     }
 
     player.setVolume(defaultVolume);
     player.playVideo();
+    clearUnloadTimer();
 
     if (blockedCheckRef.current) {
       window.clearTimeout(blockedCheckRef.current);
@@ -185,32 +239,42 @@ export function BackgroundRadioPlayer() {
   }, [isRadioFallbackActive, isReady]);
 
   const enableRadio = () => {
-    const player = playerRef.current;
+    userEnabledRef.current = true;
 
-    if (!player) {
-      return;
-    }
+    void ensurePlayer().then((player) => {
+      if (!player || !isRadioFallbackActive) {
+        return;
+      }
 
-    player.setVolume(defaultVolume);
-    player.playVideo();
-    setNeedsGesture(false);
+      player.setVolume(defaultVolume);
+      player.playVideo();
+      setNeedsGesture(false);
+    });
   };
 
   const toggleRadio = () => {
+    if (!isRadioFallbackActive) {
+      return;
+    }
+
+    if (!playerRef.current) {
+      enableRadio();
+      return;
+    }
+
     const player = playerRef.current;
 
-    if (!player || !isRadioFallbackActive) {
-      return;
-    }
-
     if (isRadioPlaying) {
+      userEnabledRef.current = false;
       player.pauseVideo();
-      setIsRadioPlaying(false);
+      unloadPlayer();
       return;
     }
 
+    userEnabledRef.current = true;
     player.setVolume(defaultVolume);
     player.playVideo();
+    clearUnloadTimer();
     setNeedsGesture(false);
   };
 
@@ -219,7 +283,12 @@ export function BackgroundRadioPlayer() {
       return;
     }
 
-    playerRef.current?.previousVideo();
+    if (!playerRef.current) {
+      enableRadio();
+      return;
+    }
+
+    playerRef.current.previousVideo();
   };
 
   const goToNext = () => {
@@ -227,10 +296,15 @@ export function BackgroundRadioPlayer() {
       return;
     }
 
-    playerRef.current?.nextVideo();
+    if (!playerRef.current) {
+      enableRadio();
+      return;
+    }
+
+    playerRef.current.nextVideo();
   };
 
-  const controlsDisabled = !isReady || !isRadioFallbackActive;
+  const controlsDisabled = !isRadioFallbackActive;
 
   return (
     <>
@@ -256,10 +330,10 @@ export function BackgroundRadioPlayer() {
           <button
             type="button"
             onClick={needsGesture ? enableRadio : toggleRadio}
-            disabled={!isReady || !isRadioFallbackActive}
+            disabled={!isRadioFallbackActive || isLoading}
             className="grid h-full place-items-center rounded border border-ping-accent/35 bg-ping-accent/12 text-ping-accent transition hover:border-ping-pink/45 hover:text-ping-pink disabled:cursor-default disabled:opacity-35"
             aria-label={isRadioPlaying ? "Pause radio" : "Play radio"}
-            title={isRadioPlaying ? "Pause" : "Play"}
+            title={isLoading ? "Tuning" : isRadioPlaying ? "Pause" : "Play"}
           >
             {isRadioPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
           </button>

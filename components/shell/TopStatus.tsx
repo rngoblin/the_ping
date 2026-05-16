@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Menu, Radio, Settings2 } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
-import { ThemeSwitch } from "@/components/shell/ThemeSwitch";
+import { LowPowerSwitch, ThemeSwitch } from "@/components/shell/ThemeSwitch";
 
 const formatDuration = (minutes: number) => {
   if (minutes < 1) {
@@ -55,6 +55,7 @@ export function TopStatus({ onOpenHostPanel }: { onOpenHostPanel?: () => void })
         ) : null}
       </div>
       <div className="flex items-center gap-2">
+        <LowPowerSwitch compact />
         <ThemeSwitch compact />
         {onOpenHostPanel ? (
           <>

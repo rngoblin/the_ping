@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "framer-motion";
 import { useEffect, useMemo, useRef } from "react";
 import type { CSSProperties } from "react";
 import { ChatInput } from "@/components/chat/ChatInput";
@@ -16,7 +15,7 @@ export function ChatPanel() {
   const hiddenMessageIds = usePingStore((state) => state.hiddenMessageIds);
   const roomMessages = usePingStore((state) => state.messagesByRoom[activeRoomId] ?? emptyMessages);
   const messages = useMemo(
-    () => roomMessages.filter((message) => !hiddenMessageIds.includes(message.id)),
+    () => roomMessages.filter((message) => !hiddenMessageIds.includes(message.id)).slice(-80),
     [hiddenMessageIds, roomMessages]
   );
   const activeRoom = rooms.find((room) => room.id === activeRoomId);
@@ -33,11 +32,7 @@ export function ChatPanel() {
   }, [activeRoomId, messages.length]);
 
   return (
-    <motion.section
-      key={activeRoomId}
-      initial={{ opacity: 0.88 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.22 }}
+    <section
       className="chat-panel flex h-[58dvh] min-h-[21rem] flex-col overflow-hidden rounded-lg border border-ping-black/10 bg-ping-surface/80 shadow-line sm:h-[62dvh] sm:min-h-[24rem] lg:h-[44.75rem] lg:min-h-0 xl:h-[44.75rem] xl:max-h-[44.75rem]"
       style={activeRoom ? ({ "--active-room-tint": activeRoom.tint } as CSSProperties) : undefined}
     >
@@ -69,6 +64,6 @@ export function ChatPanel() {
       </div>
 
       <ChatInput />
-    </motion.section>
+    </section>
   );
 }

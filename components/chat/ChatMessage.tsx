@@ -1,7 +1,8 @@
+import { memo } from "react";
 import type { ChatMessage as ChatMessageType } from "@/data/messages";
 import { PixelSigil } from "@/components/identity/PixelSigil";
 
-export function ChatMessage({ message }: { message: ChatMessageType }) {
+function ChatMessageView({ message }: { message: ChatMessageType }) {
   if (message.kind === "system") {
     return (
       <article className="flex justify-center py-1">
@@ -27,3 +28,5 @@ export function ChatMessage({ message }: { message: ChatMessageType }) {
     </article>
   );
 }
+
+export const ChatMessage = memo(ChatMessageView);

@@ -1,4 +1,5 @@
 import type { ChatMessage } from "@/data/messages";
+import { trackRealtimeChannel } from "@/services/performance/perfMetrics";
 import { getSupabaseClient } from "@/services/supabase/client";
 import type {
   NotifyLeadInput,
@@ -107,7 +108,7 @@ const fetchRoomMessages = async (roomId: string) => {
     .select(messageColumns)
     .eq("room_id", roomId)
     .order("created_at", { ascending: false })
-    .limit(50);
+    .limit(80);
 
   if (error) {
     throw new Error(error.message);
@@ -130,6 +131,22 @@ const fetchReactionCount = async (roomId: string) => {
   }
 
   return count ?? 0;
+};
+
+const fetchPresenceSnapshotCounts = async (roomIds: string[]) => {
+  const supabase = getSupabaseClient();
+
+  if (!supabase || roomIds.length === 0) {
+    return {};
+  }
+
+  const { data, error } = await supabase.from("presence_snapshots").select("room_id, count").in("room_id", roomIds);
+
+  if (error) {
+    return {};
+  }
+
+  return Object.fromEntries((data ?? []).map((row) => [(row as { room_id: string }).room_id, (row as { count: number }).count]));
 };
 
 export const supabaseRealtime: RealtimeAdapter = {
@@ -177,7 +194,7 @@ export const supabaseRealtime: RealtimeAdapter = {
           filter: `room_id=eq.${roomId}`
         },
         (payload) => {
-          messages = uniqMessages([...messages, toChatMessage(payload.new as MessageRow)]).slice(-50);
+          messages = uniqMessages([...messages, toChatMessage(payload.new as MessageRow)]).slice(-80);
           emit();
         }
       )
@@ -186,11 +203,13 @@ export const supabaseRealtime: RealtimeAdapter = {
           syncMessages();
         }
       });
+    const releaseChannel = trackRealtimeChannel();
 
     return () => {
       isActive = false;
       window.removeEventListener("online", handleReconnect);
       window.removeEventListener("focus", handleReconnect);
+      releaseChannel();
       void supabase.removeChannel(channel);
     };
   },
@@ -268,11 +287,13 @@ export const supabaseRealtime: RealtimeAdapter = {
         }
       }
     });
+    const releaseChannel = trackRealtimeChannel();
 
     return () => {
       if (user) {
         void channel.untrack();
       }
+      releaseChannel();
       void supabase.removeChannel(channel);
     };
   },
@@ -301,7 +322,7 @@ export const supabaseRealtime: RealtimeAdapter = {
     return toReaction(data as ReactionRow);
   },
 
-  subscribeToReactions: (callback: ReactionCallback) => {
+  subscribeToReactions: (callback: ReactionCallback, roomId?: string) => {
     const supabase = getSupabaseClient();
 
     if (!supabase) {
@@ -315,13 +336,16 @@ export const supabaseRealtime: RealtimeAdapter = {
         {
           event: "INSERT",
           schema: "public",
-          table: "reactions"
+          table: "reactions",
+          ...(roomId ? { filter: `room_id=eq.${roomId}` } : {})
         },
         (payload) => callback(toReaction(payload.new as ReactionRow))
       )
       .subscribe();
+    const releaseChannel = trackRealtimeChannel();
 
     return () => {
+      releaseChannel();
       void supabase.removeChannel(channel);
     };
   },
@@ -382,14 +406,17 @@ export const supabaseRealtime: RealtimeAdapter = {
           syncCount();
         }
       });
+    const releaseChannel = trackRealtimeChannel();
 
     return () => {
       isActive = false;
       window.removeEventListener("online", handleReconnect);
       window.removeEventListener("focus", handleReconnect);
+      releaseChannel();
       void supabase.removeChannel(channel);
     };
   },
+  fetchPresenceCounts: fetchPresenceSnapshotCounts,
 
   captureNotifyLead: async (lead: NotifyLeadInput) => {
     const supabase = getSupabaseClient();

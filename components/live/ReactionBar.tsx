@@ -64,10 +64,10 @@ export function ReactionPulses() {
         {reactions.map((reaction) => (
           <motion.div
             key={reaction.id}
-            initial={{ opacity: 0, y: 74, scale: 0.74, filter: "blur(4px)" }}
-            animate={{ opacity: [0, 0.86, 0.58, 0], y: -210, scale: [0.74, 1.12, 1.04, 0.92], filter: ["blur(4px)", "blur(0px)", "blur(0px)", "blur(7px)"] }}
-            exit={{ opacity: 0, scale: 0.9, filter: "blur(8px)" }}
-            transition={{ duration: 2.45, times: [0, 0.18, 0.62, 1], ease: "easeOut" }}
+            initial={{ opacity: 0, y: 74, scale: 0.78 }}
+            animate={{ opacity: [0, 0.86, 0.56, 0], y: -190, scale: [0.78, 1.08, 1, 0.92] }}
+            exit={{ opacity: 0, scale: 0.92 }}
+            transition={{ duration: 1.8, times: [0, 0.18, 0.62, 1], ease: "easeOut" }}
             onAnimationComplete={() => removeReaction(reaction.id)}
             className="absolute bottom-8 grid size-12 place-items-center rounded-full border border-ping-bg/35 bg-ping-bg/28 text-ping-pink backdrop-blur-md"
             style={{ left: `${reaction.x}%`, color: "var(--pulse-pink)" }}

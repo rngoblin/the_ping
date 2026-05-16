@@ -35,6 +35,9 @@ export function AppShell() {
   const activeAnnouncement = usePingStore((state) => state.activeAnnouncement);
   const hydrateLocalSession = usePingStore((state) => state.hydrateLocalSession);
   const hydrateTheme = usePingStore((state) => state.hydrateTheme);
+  const hydratePerformanceMode = usePingStore((state) => state.hydratePerformanceMode);
+  const setMotionReduced = usePingStore((state) => state.setMotionReduced);
+  const setPageVisible = usePingStore((state) => state.setPageVisible);
   const applyHostEventState = usePingStore((state) => state.applyHostEventState);
   const setActiveAnnouncement = usePingStore((state) => state.setActiveAnnouncement);
   const setRoomMessages = usePingStore((state) => state.setRoomMessages);
@@ -42,6 +45,9 @@ export function AppShell() {
   const setModerationActions = usePingStore((state) => state.setModerationActions);
   const setReactionCount = usePingStore((state) => state.setReactionCount);
   const receiveReaction = usePingStore((state) => state.receiveReaction);
+  const isLowPowerMode = usePingStore((state) => state.isLowPowerMode);
+  const isMotionReduced = usePingStore((state) => state.isMotionReduced);
+  const isPageVisible = usePingStore((state) => state.isPageVisible);
   const rooms = usePingStore((state) => state.rooms);
   const events = usePingStore((state) => state.events);
   const activeEventId = usePingStore((state) => state.activeEventId);
@@ -62,7 +68,24 @@ export function AppShell() {
   useEffect(() => {
     hydrateLocalSession();
     hydrateTheme();
-  }, [hydrateLocalSession, hydrateTheme]);
+    hydratePerformanceMode();
+  }, [hydrateLocalSession, hydratePerformanceMode, hydrateTheme]);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const handleMotionChange = () => setMotionReduced(mediaQuery.matches);
+    const handleVisibilityChange = () => setPageVisible(document.visibilityState === "visible");
+
+    handleMotionChange();
+    handleVisibilityChange();
+    mediaQuery.addEventListener("change", handleMotionChange);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      mediaQuery.removeEventListener("change", handleMotionChange);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [setMotionReduced, setPageVisible]);
 
   useEffect(() => {
     if (!localUser || !sessionWasRestored) {
@@ -83,6 +106,10 @@ export function AppShell() {
   }, [activeRoomId, localUser, noteRoomEntry]);
 
   useEffect(() => {
+    if (!isPageVisible) {
+      return () => undefined;
+    }
+
     const adapter = getRealtimeAdapter();
     const unsubscribeMessages = adapter.subscribeToRoomMessages(activeRoomId, (messages) => {
       setRoomMessages(activeRoomId, messages);
@@ -95,29 +122,67 @@ export function AppShell() {
       unsubscribeMessages();
       unsubscribeReactionCount();
     };
-  }, [activeRoomId, setReactionCount, setRoomMessages]);
+  }, [activeRoomId, isPageVisible, setReactionCount, setRoomMessages]);
 
   useEffect(() => {
+    if (!isPageVisible) {
+      return () => undefined;
+    }
+
     const adapter = getRealtimeAdapter();
-    const unsubscribes = rooms.map((room) =>
-      adapter.subscribeToPresence(
-        room.id,
-        (presence) => {
-          setRoomPresence(room.id, presence);
-        },
-        localUser && room.id === activeRoomId ? createPresenceUser(localUser, room.id) : undefined
-      )
+    const unsubscribe = adapter.subscribeToPresence(
+      activeRoomId,
+      (presence) => {
+        setRoomPresence(activeRoomId, presence);
+      },
+      localUser ? createPresenceUser(localUser, activeRoomId) : undefined
     );
 
     return () => {
-      unsubscribes.forEach((unsubscribe) => unsubscribe());
+      unsubscribe();
     };
-  }, [activeRoomId, localUser, rooms, setRoomPresence]);
+  }, [activeRoomId, isPageVisible, localUser, setRoomPresence]);
 
   useEffect(() => {
-    const unsubscribeReactions = getRealtimeAdapter().subscribeToReactions(receiveReaction);
+    if (!isPageVisible || rooms.length === 0) {
+      return () => undefined;
+    }
+
+    const adapter = getRealtimeAdapter();
+    const inactiveRoomIds = rooms.map((room) => room.id).filter((roomId) => roomId !== activeRoomId);
+    let isActive = true;
+
+    const refreshInactivePresence = () => {
+      void adapter.fetchPresenceCounts(inactiveRoomIds).then((counts) => {
+        if (!isActive) {
+          return;
+        }
+
+        Object.entries(counts).forEach(([roomId, count]) => {
+          setRoomPresence(roomId, { roomId, count, avatars: [], users: [] });
+        });
+      });
+    };
+
+    refreshInactivePresence();
+    const interval = window.setInterval(refreshInactivePresence, isLowPowerMode || isMotionReduced ? 120_000 : 60_000);
+    window.addEventListener("focus", refreshInactivePresence);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refreshInactivePresence);
+    };
+  }, [activeRoomId, isLowPowerMode, isMotionReduced, isPageVisible, rooms, setRoomPresence]);
+
+  useEffect(() => {
+    if (!isPageVisible) {
+      return () => undefined;
+    }
+
+    const unsubscribeReactions = getRealtimeAdapter().subscribeToReactions(receiveReaction, activeRoomId);
     return unsubscribeReactions;
-  }, [receiveReaction]);
+  }, [activeRoomId, isPageVisible, receiveReaction]);
 
   useEffect(() => {
     const unsubscribeEventState = subscribeToHostEventState(activeEventId, applyHostEventState);
@@ -150,23 +215,27 @@ export function AppShell() {
       }
     >
       <div className="noise" />
-      <div className="ambient-motion pointer-events-none" aria-hidden="true">
-        <div className="ambient-drift" />
-        <div className="ambient-grid" />
-      </div>
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeRoomId}
-          aria-hidden="true"
-          className="room-transition-glow pointer-events-none fixed inset-0 z-[5]"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: [0, 0.42, 0] }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.9, ease: "easeOut" }}
-        />
-      </AnimatePresence>
+      {!isLowPowerMode && !isMotionReduced && isPageVisible ? (
+        <div className="ambient-motion pointer-events-none" aria-hidden="true">
+          <div className="ambient-drift" />
+          <div className="ambient-grid" />
+        </div>
+      ) : null}
+      {!isLowPowerMode && !isMotionReduced && isPageVisible ? (
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={activeRoomId}
+            aria-hidden="true"
+            className="room-transition-glow pointer-events-none fixed inset-0 z-[5]"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: [0, 0.42, 0] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.9, ease: "easeOut" }}
+          />
+        </AnimatePresence>
+      ) : null}
       <AnimatePresence>
-        {showRecognizedSignal && localUser ? (
+        {showRecognizedSignal && localUser && !isLowPowerMode && !isMotionReduced && isPageVisible ? (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

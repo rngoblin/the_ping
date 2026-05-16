@@ -1,6 +1,41 @@
 "use client";
 
+import { memo, useCallback } from "react";
 import { usePingStore } from "@/store/usePingStore";
+import type { Room } from "@/data/rooms";
+
+const RoomCard = memo(function RoomCard({
+  room,
+  isActive,
+  presenceCount,
+  onSelect
+}: {
+  room: Room;
+  isActive: boolean;
+  presenceCount: number;
+  onSelect: (roomId: string) => void;
+}) {
+  const handleClick = useCallback(() => onSelect(room.id), [onSelect, room.id]);
+
+  return (
+    <button
+      onClick={handleClick}
+      className={`h-[6.35rem] min-h-0 rounded-md border px-3 py-3 text-left transition lg:h-full ${
+        isActive ? "border-ping-accent/45 bg-ping-sage/70" : "border-transparent bg-ping-bg/45 hover:border-ping-black/10 hover:bg-ping-bg"
+      }`}
+    >
+      <div className="flex items-center justify-between gap-3">
+        <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
+          <span className="size-2 rounded-full" style={{ backgroundColor: room.accent }} />
+          {room.name}
+        </span>
+        <span className="font-mono text-[10px] text-ping-ink/45">{presenceCount}</span>
+      </div>
+      <p className="mt-2 truncate text-xs text-ping-ink/50">{room.description}</p>
+      <p className="mt-2 truncate font-mono text-[10px] uppercase text-ping-ink/35">{room.tagline}</p>
+    </button>
+  );
+});
 
 export function RoomList() {
   const rooms = usePingStore((state) => state.rooms);
@@ -19,27 +54,7 @@ export function RoomList() {
           const isActive = activeRoomId === room.id;
           const presenceCount = presenceByRoom[room.id]?.count ?? 0;
 
-          return (
-            <button
-              key={room.id}
-              onClick={() => setActiveRoom(room.id)}
-              className={`h-[6.35rem] min-h-0 rounded-md border px-3 py-3 text-left transition lg:h-full ${
-                isActive
-                  ? "border-ping-accent/45 bg-ping-sage/70"
-                  : "border-transparent bg-ping-bg/45 hover:border-ping-black/10 hover:bg-ping-bg"
-              }`}
-            >
-              <div className="flex items-center justify-between gap-3">
-                <span className="flex min-w-0 items-center gap-2 text-sm font-medium">
-                  <span className="size-2 rounded-full" style={{ backgroundColor: room.accent }} />
-                  {room.name}
-                </span>
-                <span className="font-mono text-[10px] text-ping-ink/45">{presenceCount}</span>
-              </div>
-              <p className="mt-2 truncate text-xs text-ping-ink/50">{room.description}</p>
-              <p className="mt-2 truncate font-mono text-[10px] uppercase text-ping-ink/35">{room.tagline}</p>
-            </button>
-          );
+          return <RoomCard key={room.id} room={room} isActive={isActive} presenceCount={presenceCount} onSelect={setActiveRoom} />;
         })}
       </div>
     </section>

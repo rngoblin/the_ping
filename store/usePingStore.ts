@@ -64,6 +64,9 @@ type PingStore = {
   presenceByRoom: Record<string, PresenceState>;
   notifyLeads: NotifyLead[];
   themeMode: ThemeMode;
+  isLowPowerMode: boolean;
+  isMotionReduced: boolean;
+  isPageVisible: boolean;
   viewerCount: number;
   isPlaying: boolean;
   isMuted: boolean;
@@ -93,6 +96,11 @@ type PingStore = {
   hydrateTheme: () => void;
   setThemeMode: (themeMode: ThemeMode) => void;
   toggleThemeMode: () => void;
+  hydratePerformanceMode: () => void;
+  setLowPowerMode: (isLowPowerMode: boolean) => void;
+  toggleLowPowerMode: () => void;
+  setMotionReduced: (isMotionReduced: boolean) => void;
+  setPageVisible: (isPageVisible: boolean) => void;
   setMobilePanel: (panel: MobilePanel) => void;
   togglePlaying: () => void;
   toggleMuted: () => void;
@@ -110,6 +118,7 @@ const createId = () => {
 const sessionStorageKey = "ping.localSession.v03";
 const notifyStorageKey = "ping.notifyLeads.v03";
 const themeStorageKey = "ping.themeMode.v01";
+const lowPowerStorageKey = "ping.lowPowerMode.v01";
 const roomEntryStorageKey = "ping.roomEntryEvents.v01";
 const systemAvatarSeed = createSigilSeed("PING", 0);
 
@@ -149,6 +158,16 @@ const applyThemeMode = (themeMode: ThemeMode) => {
   document.documentElement.dataset.theme = themeMode === "night" ? "night" : "daylight";
 };
 
+const applyPerformanceMode = (isLowPowerMode: boolean, isMotionReduced: boolean, isPageVisible: boolean) => {
+  if (typeof document === "undefined") {
+    return;
+  }
+
+  document.documentElement.dataset.lowPower = isLowPowerMode ? "true" : "false";
+  document.documentElement.dataset.motion = isMotionReduced ? "reduced" : "full";
+  document.documentElement.dataset.visibility = isPageVisible ? "visible" : "hidden";
+};
+
 const dedupeMessages = (messages: ChatMessage[]) => {
   const seen = new Set<string>();
 
@@ -173,7 +192,7 @@ const messageTime = (message: ChatMessage) => {
 
 const sortMessagesChronologically = (messages: ChatMessage[]) => [...messages].sort((a, b) => messageTime(a) - messageTime(b));
 
-const mergeRoomMessages = (messages: ChatMessage[]) => sortMessagesChronologically(dedupeMessages(messages)).slice(-50);
+const mergeRoomMessages = (messages: ChatMessage[]) => sortMessagesChronologically(dedupeMessages(messages)).slice(-80);
 
 const deriveModerationState = (actions: ModerationAction[]) => ({
   hiddenMessageIds: actions.map((action) => action.targetMessageId).filter((id): id is string => Boolean(id)),
@@ -209,6 +228,9 @@ export const usePingStore = create<PingStore>((set, get) => ({
   presenceByRoom: Object.fromEntries(rooms.map((room) => [room.id, { roomId: room.id, count: 0, avatars: [], users: [] }])),
   notifyLeads: [],
   themeMode: "daylight",
+  isLowPowerMode: false,
+  isMotionReduced: false,
+  isPageVisible: true,
   viewerCount: activeEvent.currentLive.viewerCount,
   isPlaying: false,
   isMuted: false,
@@ -238,6 +260,13 @@ export const usePingStore = create<PingStore>((set, get) => ({
     const themeMode = loadJson<ThemeMode>(themeStorageKey, "daylight");
     applyThemeMode(themeMode);
     set({ themeMode });
+  },
+  hydratePerformanceMode: () => {
+    const isMotionReduced = typeof window !== "undefined" ? window.matchMedia("(prefers-reduced-motion: reduce)").matches : false;
+    const isLowPowerMode = loadJson<boolean>(lowPowerStorageKey, isMotionReduced);
+    const isPageVisible = typeof document === "undefined" ? true : document.visibilityState === "visible";
+    applyPerformanceMode(isLowPowerMode, isMotionReduced, isPageVisible);
+    set({ isLowPowerMode, isMotionReduced, isPageVisible });
   },
   enterSession: (nickname, inviteCode, sigilVariant = 0) => {
     const cleanNickname = normalizeNickname(nickname);
@@ -403,7 +432,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
       }
 
       return {
-        reactions: [...state.reactions, reaction],
+        reactions: [...state.reactions, reaction].slice(-12),
         viewerCount: state.viewerCount + 1
       };
     });
@@ -493,7 +522,7 @@ export const usePingStore = create<PingStore>((set, get) => ({
       });
 
     set((state) => ({
-      reactions: state.reactions.some((reaction) => reaction.id === pulse.id) ? state.reactions : [...state.reactions, pulse],
+      reactions: state.reactions.some((reaction) => reaction.id === pulse.id) ? state.reactions : [...state.reactions, pulse].slice(-12),
       viewerCount: state.viewerCount + 1
     }));
   },
@@ -537,6 +566,25 @@ export const usePingStore = create<PingStore>((set, get) => ({
   toggleThemeMode: () => {
     const nextTheme = get().themeMode === "night" ? "daylight" : "night";
     get().setThemeMode(nextTheme);
+  },
+  setLowPowerMode: (isLowPowerMode) => {
+    persistJson(lowPowerStorageKey, isLowPowerMode);
+    const { isMotionReduced, isPageVisible } = get();
+    applyPerformanceMode(isLowPowerMode, isMotionReduced, isPageVisible);
+    set({ isLowPowerMode });
+  },
+  toggleLowPowerMode: () => {
+    get().setLowPowerMode(!get().isLowPowerMode);
+  },
+  setMotionReduced: (isMotionReduced) => {
+    const { isLowPowerMode, isPageVisible } = get();
+    applyPerformanceMode(isLowPowerMode, isMotionReduced, isPageVisible);
+    set({ isMotionReduced });
+  },
+  setPageVisible: (isPageVisible) => {
+    const { isLowPowerMode, isMotionReduced } = get();
+    applyPerformanceMode(isLowPowerMode, isMotionReduced, isPageVisible);
+    set({ isPageVisible });
   },
   setMobilePanel: (panel) => set({ mobilePanel: panel }),
   togglePlaying: () => set((state) => ({ isPlaying: !state.isPlaying })),

@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun } from "lucide-react";
+import { Battery, Moon, Sun } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 
 export function ThemeSwitch({ compact = false }: { compact?: boolean }) {
@@ -19,6 +19,25 @@ export function ThemeSwitch({ compact = false }: { compact?: boolean }) {
     >
       {isNight ? <Sun size={16} /> : <Moon size={16} />}
       <span className="font-mono text-[10px] uppercase">{isNight ? "day" : "night"}</span>
+    </button>
+  );
+}
+
+export function LowPowerSwitch({ compact = false }: { compact?: boolean }) {
+  const isLowPowerMode = usePingStore((state) => state.isLowPowerMode);
+  const toggleLowPowerMode = usePingStore((state) => state.toggleLowPowerMode);
+
+  return (
+    <button
+      onClick={toggleLowPowerMode}
+      aria-label={isLowPowerMode ? "Disable low power mode" : "Enable low power mode"}
+      title={isLowPowerMode ? "Low power on" : "Low power off"}
+      className={`flex items-center gap-2 rounded-full border border-ping-black/10 bg-ping-surface text-ping-ink transition hover:bg-ping-muted ${
+        compact ? "h-9 px-3" : "h-10 px-3"
+      } ${isLowPowerMode ? "border-ping-accent/45 text-ping-accent" : ""}`}
+    >
+      <Battery size={16} />
+      <span className="hidden font-mono text-[10px] uppercase sm:inline">{isLowPowerMode ? "eco" : "full"}</span>
     </button>
   );
 }
