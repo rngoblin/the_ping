@@ -26,7 +26,7 @@ export function ReactionBar() {
               whileTap={{ scale: 0.94 }}
               key={reaction.emoji}
               onClick={() => addReaction(reaction.emoji)}
-              className="group grid size-10 place-items-center rounded-full border border-ping-black/10 bg-ping-surface text-ping-ink transition hover:border-ping-pink/45 hover:bg-ping-softPink/20 sm:size-11"
+              className="group grid size-10 place-items-center rounded-full border border-ping-bg/20 bg-ping-bg/10 text-ping-bg shadow-line backdrop-blur-md transition hover:border-ping-pink/50 hover:bg-ping-softPink/20 sm:size-11"
               aria-label={reaction.label}
               title={reaction.label}
             >
@@ -35,7 +35,7 @@ export function ReactionBar() {
           );
         })}
       </div>
-      <p className="max-w-[9.5rem] text-right font-mono text-[9px] uppercase leading-relaxed text-ping-ink/45 sm:max-w-[12rem] sm:text-[10px]">
+      <p className="max-w-[9.5rem] text-right font-mono text-[9px] uppercase leading-relaxed text-ping-bg/55 sm:max-w-[12rem] sm:text-[10px]">
         {reactionCount.toLocaleString()} pulses in this room
       </p>
     </div>

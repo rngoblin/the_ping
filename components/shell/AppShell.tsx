@@ -8,7 +8,6 @@ import { PingWordmark } from "@/components/brand/PingWordmark";
 import { PixelSigil } from "@/components/identity/PixelSigil";
 import { BackgroundRadioPlayer } from "@/components/live/BackgroundRadioPlayer";
 import { LivePlayer } from "@/components/live/LivePlayer";
-import { ReactionBar } from "@/components/live/ReactionBar";
 import { RoomList } from "@/components/rooms/RoomList";
 import { RoomSwitcher } from "@/components/rooms/RoomSwitcher";
 import { RoomVibe } from "@/components/rooms/RoomVibe";
@@ -204,7 +203,6 @@ export function AppShell() {
               <section id="live-section" className="scroll-mt-6">
                 <LivePlayer />
               </section>
-              <ReactionBar />
               <RoomSwitcher />
 
               <div id="rooms-section" className="grid scroll-mt-6 gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
