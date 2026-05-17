@@ -518,6 +518,12 @@ button {
   background: #050706;
 }
 
+:root[data-theme="night"] .stream-control-band,
+:root[data-theme="night"] .stream-reaction-dock {
+  border-color: rgba(42, 54, 49, 0.92);
+  background-color: rgba(9, 13, 11, 0.94);
+}
+
 :root[data-theme="night"] .live-player .text-ping-bg,
 :root[data-theme="night"] .live-player .text-ping-bg\/80,
 :root[data-theme="night"] .live-player .text-ping-bg\/75,
