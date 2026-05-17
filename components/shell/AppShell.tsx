@@ -313,7 +313,6 @@ export function AppShell() {
             </div>
 
             <aside className="hidden content-start gap-4 xl:grid xl:grid-cols-1">
-              <RoomList compact />
               <section id="schedule-section" className="scroll-mt-6">
                 <SchedulePanel onOpenFullSchedule={openFullSchedule} />
               </section>
@@ -321,6 +320,7 @@ export function AppShell() {
                 <RoomsHeatmap />
               </section>
               <PeopleHere presence={activePresence} />
+              <RoomList compact />
             </aside>
           </div>
         </div>

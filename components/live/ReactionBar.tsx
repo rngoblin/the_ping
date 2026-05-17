@@ -59,7 +59,7 @@ export function ReactionPulses() {
   const removeReaction = usePingStore((state) => state.removeReaction);
 
   return (
-    <div className="pointer-events-none absolute inset-0 z-[8] overflow-hidden">
+    <div className="pointer-events-none absolute inset-0 z-[18] overflow-hidden">
       <AnimatePresence>
         {reactions.map((reaction) => (
           <motion.div

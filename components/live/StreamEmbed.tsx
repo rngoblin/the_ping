@@ -39,7 +39,10 @@ export function StreamEmbed() {
   if (!isAvailable) {
     return (
       <div className="absolute inset-0 z-[12] overflow-hidden border border-ping-accent/25 bg-ping-black text-ping-bg">
-        <Image src={STREAM_COVER_SRC} alt="" fill sizes="100vw" priority className="theme-cover-art object-cover" />
+        <div className="absolute inset-x-0 top-0 bottom-[4.5rem] overflow-hidden sm:bottom-[5rem]">
+          <Image src={STREAM_COVER_SRC} alt="" fill sizes="100vw" priority className="theme-cover-art object-cover object-top" />
+        </div>
+        <div className="absolute inset-x-0 bottom-0 h-[4.5rem] bg-ping-black sm:h-[5rem]" />
         <StreamBadge>scheduled 21:00</StreamBadge>
         <div className="sr-only">
           <p className="font-mono text-sm uppercase tracking-[0.16em] text-ping-accent sm:text-base">stream starts at 21:00</p>
