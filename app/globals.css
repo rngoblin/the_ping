@@ -259,14 +259,12 @@ button {
   background:
     radial-gradient(circle at 50% 22%, var(--room-tint, rgba(94, 122, 100, 0.2)), transparent 24rem),
     radial-gradient(circle at 78% 70%, rgba(255, 107, 138, 0.07), transparent 18rem);
-  mix-blend-mode: soft-light;
 }
 
 :root[data-theme="night"] .room-transition-glow {
   background:
     radial-gradient(circle at 50% 22%, rgba(168, 255, 96, 0.075), transparent 22rem),
     radial-gradient(circle at 78% 70%, rgba(255, 90, 124, 0.045), transparent 17rem);
-  mix-blend-mode: screen;
 }
 
 .signal-recognized-sigil {
@@ -486,6 +484,10 @@ button {
   transform: translateZ(0);
 }
 
+.stream-cover-art {
+  transform: translateZ(0);
+}
+
 :root:not([data-theme="night"]) .theme-cover-art {
   filter: invert(1) hue-rotate(180deg) saturate(0.82) brightness(1.06) contrast(0.94);
 }
@@ -523,8 +525,11 @@ button {
 }
 
 :root[data-theme="night"] .live-player {
-  border-color: rgba(42, 54, 49, 0.92);
+  border-color: rgba(168, 255, 96, 0.22);
   background: #050706;
+  box-shadow:
+    0 0 0 1px rgba(42, 54, 49, 0.82),
+    0 20px 62px rgba(0, 0, 0, 0.42);
 }
 
 :root[data-theme="night"] .stream-control-band,

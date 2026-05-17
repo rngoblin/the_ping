@@ -49,7 +49,7 @@ export function ChatPanel() {
         </span>
       </div>
 
-      <div ref={scrollRef} className="soft-scroll min-h-0 flex-1 space-y-5 overflow-y-auto p-4">
+      <div ref={scrollRef} className="soft-scroll min-h-0 flex-1 space-y-4 overflow-y-auto p-4">
         {chatStatus === "loading" && !messages.length ? (
           <div className="grid min-h-full place-items-center py-10 text-center">
             <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/40">loading chat history...</p>
@@ -68,9 +68,9 @@ export function ChatPanel() {
           <div className="grid min-h-full place-items-center py-10 text-center">
             <div className="max-w-xs">
               <div className="mx-auto mb-4 h-px w-24 bg-ping-accent/35" />
-              <p className="font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/40">room is listening</p>
+              <p className="text-sm font-medium text-ping-ink/55">No messages yet. Send the first signal.</p>
               <p className="mt-3 text-sm leading-relaxed text-ping-ink/45">
-                {activeRoom?.name ?? "this room"} is quiet for now. First signal lands softly.
+                {activeRoom?.name ?? "this room"} is quiet for now. Drop a pulse when the room starts to breathe.
               </p>
             </div>
           </div>

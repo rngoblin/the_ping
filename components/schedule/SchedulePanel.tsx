@@ -11,7 +11,7 @@ export function SchedulePanel({ onOpenFullSchedule }: { onOpenFullSchedule: () =
   const nextAct = schedule[0];
 
   return (
-    <section className="rounded-lg border border-ping-black/10 bg-ping-surface/80 p-4 shadow-line">
+    <section className="rounded-md border border-ping-black/10 bg-ping-surface/70 p-4 shadow-line">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/50">up next</h2>
         <CalendarDays size={16} className="text-ping-accent" />
@@ -22,7 +22,7 @@ export function SchedulePanel({ onOpenFullSchedule }: { onOpenFullSchedule: () =
             type="button"
             onClick={() => setIsDetailsOpen((isOpen) => !isOpen)}
             aria-expanded={isDetailsOpen}
-            className="group w-full rounded-md border border-ping-black/10 bg-ping-bg/55 p-2 text-left transition hover:border-ping-accent/35 hover:bg-ping-bg"
+            className="group w-full rounded-md border border-ping-black/8 bg-ping-bg/36 p-2 text-left opacity-90 transition hover:border-ping-accent/24 hover:bg-ping-bg/56 hover:opacity-100"
           >
             <EventCover
               title={nextAct.title}
@@ -33,7 +33,7 @@ export function SchedulePanel({ onOpenFullSchedule }: { onOpenFullSchedule: () =
               eventCode={nextAct.id}
               theme="void"
               accent="green"
-              className="[--cover-ratio:16/9]"
+              className="[--cover-ratio:2.05/1]"
             />
           </button>
           {isDetailsOpen ? (
@@ -53,7 +53,7 @@ export function SchedulePanel({ onOpenFullSchedule }: { onOpenFullSchedule: () =
       ) : null}
       <button
         onClick={onOpenFullSchedule}
-        className="mt-4 flex h-11 w-full items-center justify-center rounded-full border border-ping-accent/30 bg-ping-bg text-sm font-medium text-ping-accent transition hover:bg-ping-sage/45"
+        className="mt-4 flex h-10 w-full items-center justify-center rounded-md border border-ping-black/10 bg-ping-bg/42 text-sm font-medium text-ping-ink/58 transition hover:border-ping-accent/24 hover:text-ping-accent"
       >
         full schedule
       </button>

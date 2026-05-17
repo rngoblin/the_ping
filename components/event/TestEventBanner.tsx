@@ -3,15 +3,19 @@
 import { CalendarDays, Radio } from "lucide-react";
 import { useEffect, useState } from "react";
 import { formatTestEventTime, getTestEventStatus, tomorrowTestEvent } from "@/data/testEvent";
+import { sessionStateCopy, type SessionState } from "@/data/sessionState";
 
-const statusCopy = {
-  upcoming: "upcoming",
-  live: "live now",
+const eventStatusToSessionState = {
+  upcoming: "scheduled",
+  live: "live",
   ended: "ended"
-};
+} satisfies Record<ReturnType<typeof getTestEventStatus>, SessionState>;
 
 export function TestEventBanner({ onJoin, compact = false }: { onJoin?: () => void; compact?: boolean }) {
   const [status, setStatus] = useState(() => getTestEventStatus());
+  const sessionState = eventStatusToSessionState[status];
+  const copy = sessionStateCopy[sessionState];
+  void onJoin;
 
   useEffect(() => {
     const interval = window.setInterval(() => setStatus(getTestEventStatus()), 30_000);
@@ -23,29 +27,28 @@ export function TestEventBanner({ onJoin, compact = false }: { onJoin?: () => vo
   }
 
   return (
-    <aside className={`rounded-lg border border-ping-accent/25 bg-ping-surface/82 shadow-line ${compact ? "p-3" : "p-4"}`}>
+    <aside className={`rounded-md border border-ping-black/8 bg-ping-surface/52 shadow-line ${compact ? "p-2.5" : "p-3"}`}>
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <p className="mb-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ping-accent">
+          <p className="mb-1 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.16em] text-ping-accent">
             <Radio size={13} />
-            {statusCopy[status]}
+            {copy.header}
           </p>
-          <h2 className={`${compact ? "text-lg" : "text-xl"} font-semibold leading-tight`}>{tomorrowTestEvent.title}</h2>
-          <p className="mt-2 text-sm leading-relaxed text-ping-ink/58">{tomorrowTestEvent.description}</p>
-          <p className="mt-3 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ping-ink/45">
+          <h2 className={`${compact ? "text-sm" : "text-base"} font-semibold leading-tight`}>{tomorrowTestEvent.title}</h2>
+          <p className="mt-1 line-clamp-1 max-w-2xl text-sm leading-relaxed text-ping-ink/48">{tomorrowTestEvent.description}</p>
+          <p className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ping-ink/42">
             <CalendarDays size={13} />
-            <span>{status === "live" ? "live now" : status === "ended" ? "session ended" : formatTestEventTime()}</span>
+            <span>{sessionState === "live" ? copy.header : sessionState === "ended" ? copy.header : formatTestEventTime()}</span>
             <span>/</span>
             <span>{tomorrowTestEvent.roomLabel}</span>
+            {sessionState === "scheduled" ? (
+              <>
+                <span>/</span>
+                <span>room already open</span>
+              </>
+            ) : null}
           </p>
         </div>
-        <button
-          type="button"
-          onClick={onJoin}
-          className="shrink-0 rounded-full border border-ping-accent/35 bg-ping-bg px-4 py-2 font-mono text-[10px] uppercase tracking-[0.12em] text-ping-accent transition hover:bg-ping-sage/35"
-        >
-          {onJoin ? "join test session" : "enter room"}
-        </button>
       </div>
     </aside>
   );

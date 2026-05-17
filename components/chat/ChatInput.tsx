@@ -10,6 +10,7 @@ export function ChatInput() {
   const localUser = usePingStore((state) => state.localUser);
   const bannedUserIds = usePingStore((state) => state.bannedUserIds);
   const isBanned = Boolean(localUser && bannedUserIds.includes(localUser.userId));
+  const canSend = Boolean(message.trim()) && !isBanned;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -34,8 +35,12 @@ export function ChatInput() {
         type="submit"
         aria-label="Send message"
         title="Send message"
-        disabled={isBanned}
-        className="pulse-fill grid size-11 shrink-0 place-items-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40"
+        disabled={!canSend}
+        className={`grid size-11 shrink-0 place-items-center rounded-md border transition disabled:cursor-not-allowed ${
+          canSend
+            ? "border-ping-accent/45 bg-ping-accent text-ping-bg shadow-[0_0_18px_rgba(168,255,96,0.16)] hover:bg-ping-accent/90"
+            : "border-ping-accent/25 bg-ping-bg/62 text-ping-accent/62"
+        }`}
       >
         <Send size={17} />
       </button>

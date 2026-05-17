@@ -5,9 +5,9 @@ import { Heart, Sparkles, Zap } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 
 const reactions = [
-  { emoji: "pulse", label: "Pulse", icon: Heart },
-  { emoji: "spark", label: "Spark", icon: Sparkles },
-  { emoji: "charge", label: "Charge", icon: Zap }
+  { emoji: "pulse", label: "pulse", icon: Heart },
+  { emoji: "spark", label: "spark", icon: Sparkles },
+  { emoji: "charge", label: "surge", icon: Zap }
 ];
 
 export function ReactionBar() {
@@ -36,7 +36,7 @@ export function ReactionBar() {
         })}
       </div>
       <p className="max-w-[8.25rem] text-right font-mono text-[8px] uppercase leading-relaxed text-ping-ink/55 sm:max-w-[12rem] sm:text-[10px]">
-        {reactionCount.toLocaleString()} pulses in this room
+        {reactionCount.toLocaleString()} signals in this room
       </p>
     </div>
   );

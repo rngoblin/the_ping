@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Pause, Play, SkipBack, SkipForward } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
+import { getSessionState } from "@/data/sessionState";
 
 const playlistId = "PLk1JTFCHeBhgiVqKUvx_2Pjogos7iTyZq";
 const defaultVolume = 36;
@@ -91,14 +92,15 @@ export function BackgroundRadioPlayer() {
   const unloadTimerRef = useRef<number | null>(null);
   const userEnabledRef = useRef(false);
   const currentLive = usePingStore((state) => state.currentLive);
+  const [now, setNow] = useState(() => Date.now());
   const [isReady, setIsReady] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [needsGesture, setNeedsGesture] = useState(false);
   const [isRadioPlaying, setIsRadioPlaying] = useState(false);
 
   const isLiveStreamActive = useMemo(
-    () => currentLive.status === "live" && currentLive.streamType !== "placeholder" && Boolean(currentLive.embedUrl || currentLive.streamUrl),
-    [currentLive.embedUrl, currentLive.status, currentLive.streamType, currentLive.streamUrl]
+    () => getSessionState(new Date(now)) === "live" && currentLive.streamType !== "placeholder" && Boolean(currentLive.embedUrl || currentLive.streamUrl),
+    [currentLive.embedUrl, currentLive.streamType, currentLive.streamUrl, now]
   );
   const isRadioFallbackActive = !isLiveStreamActive;
 
@@ -202,6 +204,11 @@ export function BackgroundRadioPlayer() {
     },
     []
   );
+
+  useEffect(() => {
+    const interval = window.setInterval(() => setNow(Date.now()), 30_000);
+    return () => window.clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     const player = playerRef.current;

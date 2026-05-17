@@ -321,11 +321,11 @@ export function AppShell() {
               <section id="schedule-section" className="scroll-mt-6">
                 <SchedulePanel onOpenFullSchedule={openFullSchedule} />
               </section>
+              <PeopleHere presence={activePresence} />
+              <RoomList compact />
               <section id="heatmap-section" className="scroll-mt-6">
                 <RoomsHeatmap />
               </section>
-              <PeopleHere presence={activePresence} />
-              <RoomList compact />
               {activeEvent?.feedbackUrl ? (
                 <FeedbackButton onClick={() => setIsFeedbackOpen(true)} />
               ) : null}
