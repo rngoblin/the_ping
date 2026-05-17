@@ -37,6 +37,7 @@ type ReactionRow = {
 
 const messageColumns = "id, room_id, user_id, nickname, avatar_seed, body, created_at";
 const reactionColors = ["#FF5A7C", "#D96B84", "#8A4F63", "#A8FF60"];
+const REACTION_SENDER_IDLE_MS = 45_000;
 
 const fallbackAvatarSeed = (nickname: string) => createSigilSeed(nickname, 0);
 
@@ -77,6 +78,97 @@ const toReaction = (row: ReactionRow): ReactionInput => ({
   x: 16 + Math.random() * 68,
   color: reactionColors[Math.abs(row.id.charCodeAt(0) + row.reaction.length) % reactionColors.length]
 });
+
+const reactionBroadcastChannel = (roomId: string) => `reactions-live:${roomId}`;
+
+type SupabaseChannel = ReturnType<NonNullable<ReturnType<typeof getSupabaseClient>>["channel"]>;
+
+type ReactionBroadcastSender = {
+  channel: SupabaseChannel;
+  ready: Promise<void>;
+  releaseChannel: () => void;
+  cleanupTimer: number | null;
+};
+
+const reactionBroadcastSenders = new Map<string, ReactionBroadcastSender>();
+
+const disposeReactionBroadcastSender = (roomId: string) => {
+  const sender = reactionBroadcastSenders.get(roomId);
+  const supabase = getSupabaseClient();
+
+  if (!sender || !supabase) {
+    return;
+  }
+
+  if (sender.cleanupTimer) {
+    window.clearTimeout(sender.cleanupTimer);
+  }
+
+  sender.releaseChannel();
+  void supabase.removeChannel(sender.channel);
+  reactionBroadcastSenders.delete(roomId);
+};
+
+const getReactionBroadcastSender = (roomId: string) => {
+  const supabase = getSupabaseClient();
+
+  if (!supabase) {
+    return null;
+  }
+
+  const current = reactionBroadcastSenders.get(roomId);
+
+  if (current) {
+    if (current.cleanupTimer) {
+      window.clearTimeout(current.cleanupTimer);
+      current.cleanupTimer = null;
+    }
+
+    return current;
+  }
+
+  const channel = supabase.channel(reactionBroadcastChannel(roomId));
+  const releaseChannel = trackRealtimeChannel();
+  const ready = new Promise<void>((resolve) => {
+    const timeout = window.setTimeout(resolve, 900);
+
+    channel.subscribe((status) => {
+      if (status === "SUBSCRIBED" || status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+        window.clearTimeout(timeout);
+        resolve();
+      }
+    });
+  });
+
+  const sender: ReactionBroadcastSender = {
+    channel,
+    ready,
+    releaseChannel,
+    cleanupTimer: null
+  };
+
+  reactionBroadcastSenders.set(roomId, sender);
+  return sender;
+};
+
+const sendReactionBroadcast = async (reaction: ReactionInput) => {
+  const sender = getReactionBroadcastSender(reaction.roomId);
+
+  if (!sender) {
+    return;
+  }
+
+  await sender.ready;
+  await sender.channel.send({
+    type: "broadcast",
+    event: "reaction",
+    payload: reaction
+  });
+
+  sender.cleanupTimer = window.setTimeout(() => {
+    disposeReactionBroadcastSender(reaction.roomId);
+  }, REACTION_SENDER_IDLE_MS);
+};
 
 const uniqMessages = (messages: ChatMessage[]) => {
   const seen = new Set<string>();
@@ -332,9 +424,12 @@ export const supabaseRealtime: RealtimeAdapter = {
       throw new Error("Supabase is not configured");
     }
 
+    void sendReactionBroadcast(reaction);
+
     const { data, error } = await supabase
       .from("reactions")
       .insert({
+        id: reaction.id,
         room_id: reaction.roomId,
         user_id: reaction.userId,
         reaction: reaction.emoji
@@ -356,8 +451,16 @@ export const supabaseRealtime: RealtimeAdapter = {
       return () => undefined;
     }
 
+    const channelName = roomId ? reactionBroadcastChannel(roomId) : "reactions-live";
     const channel = supabase
-      .channel("reactions")
+      .channel(channelName)
+      .on("broadcast", { event: "reaction" }, (payload) => {
+        const reaction = payload.payload as ReactionInput;
+
+        if (!roomId || reaction.roomId === roomId) {
+          callback(reaction);
+        }
+      })
       .on(
         "postgres_changes",
         {
@@ -368,7 +471,9 @@ export const supabaseRealtime: RealtimeAdapter = {
         },
         (payload) => callback(toReaction(payload.new as ReactionRow))
       )
-      .subscribe();
+      .subscribe((status) => {
+        debugPing("reaction subscription status", { roomId, status, channelName });
+      });
     const releaseChannel = trackRealtimeChannel();
 
     return () => {

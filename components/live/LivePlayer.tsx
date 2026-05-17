@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { usePingStore } from "@/store/usePingStore";
 import { ReactionBar, ReactionPulses } from "@/components/live/ReactionBar";
-import { isAfterStreamStartTime, StreamEmbed } from "@/components/live/StreamEmbed";
+import { getMsUntilStreamStart, isAfterStreamStartTime, StreamEmbed } from "@/components/live/StreamEmbed";
 import { VenueAtmosphere } from "@/components/live/VenueAtmosphere";
 import { PingGlyph } from "@/components/brand/PingGlyph";
 
@@ -17,16 +17,22 @@ export function LivePlayer() {
     const checkSchedule = () => setIsScheduledStreamActive(isAfterStreamStartTime());
     checkSchedule();
 
+    const startTimeout = window.setTimeout(checkSchedule, getMsUntilStreamStart() + 100);
     const interval = window.setInterval(checkSchedule, 15_000);
-    return () => window.clearInterval(interval);
+    return () => {
+      window.clearTimeout(startTimeout);
+      window.clearInterval(interval);
+    };
   }, []);
 
   return (
     <section className="live-player relative overflow-hidden rounded-md border border-ping-black/10 bg-ping-black shadow-mist">
       <div className="venue-still relative isolate aspect-[1.12/1] sm:aspect-video">
-        <VenueAtmosphere />
+        {!isScheduledStreamActive ? <VenueAtmosphere /> : null}
         <StreamEmbed />
-        <div className="pointer-events-none absolute inset-0 z-[3] bg-[radial-gradient(circle_at_50%_32%,rgba(168,255,96,0.16),transparent_18rem),linear-gradient(180deg,rgba(9,13,11,0.08),rgba(9,13,11,0.72))]" />
+        {!isScheduledStreamActive ? (
+          <div className="pointer-events-none absolute inset-0 z-[3] bg-[radial-gradient(circle_at_50%_32%,rgba(168,255,96,0.16),transparent_18rem),linear-gradient(180deg,rgba(9,13,11,0.08),rgba(9,13,11,0.72))]" />
+        ) : null}
         <ReactionPulses />
 
         {!isScheduledStreamActive ? (

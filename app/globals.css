@@ -679,10 +679,21 @@ button {
 :root[data-low-power="true"] .venue-haze,
 :root[data-motion="reduced"] .venue-haze,
 :root[data-visibility="hidden"] .venue-haze,
+:root[data-low-power="true"] .venue-atmosphere,
 :root[data-low-power="true"] .venue-lines,
 :root[data-motion="reduced"] .venue-lines,
 :root[data-visibility="hidden"] .venue-lines {
   display: none;
+}
+
+:root[data-low-power="true"] .theme-cover-art {
+  filter: saturate(0.55) contrast(0.94) brightness(0.86);
+}
+
+:root[data-low-power="true"] .live-player,
+:root[data-low-power="true"] .chat-panel,
+:root[data-low-power="true"] .rooms-heatmap-panel {
+  box-shadow: 0 0 0 1px rgba(42, 54, 49, 0.72) !important;
 }
 
 :root[data-low-power="true"] *,

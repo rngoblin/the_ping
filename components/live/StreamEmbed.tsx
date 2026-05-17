@@ -56,6 +56,13 @@ export const isAfterStreamStartTime = () => {
   return now >= start;
 };
 
+export const getMsUntilStreamStart = () => {
+  const now = new Date();
+  const start = new Date();
+  start.setHours(START_HOUR, START_MINUTE, 0, 0);
+  return Math.max(0, start.getTime() - now.getTime());
+};
+
 function StreamBadge({ children }: { children: ReactNode }) {
   return (
     <div className="stream-badge absolute left-3 top-3 z-[13] rounded-md border border-ping-accent/35 bg-ping-surface/88 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ping-accent shadow-line backdrop-blur-md">
@@ -72,8 +79,12 @@ export function StreamEmbed() {
     const checkAvailability = () => setIsAvailable(isAfterStreamStartTime());
     checkAvailability();
 
+    const startTimeout = window.setTimeout(checkAvailability, getMsUntilStreamStart() + 100);
     const interval = window.setInterval(checkAvailability, CHECK_INTERVAL_MS);
-    return () => window.clearInterval(interval);
+    return () => {
+      window.clearTimeout(startTimeout);
+      window.clearInterval(interval);
+    };
   }, []);
 
   useEffect(() => {
@@ -105,9 +116,11 @@ export function StreamEmbed() {
         events: {
           onReady: (event) => {
             const target = event.target as unknown as StreamYouTubePlayer;
-            target.unMute();
-            target.setVolume(100);
-            target.playVideo();
+            window.setTimeout(() => {
+              target.unMute();
+              target.setVolume(100);
+              target.playVideo();
+            }, 100);
           }
         }
       }) as unknown as StreamYouTubePlayer;

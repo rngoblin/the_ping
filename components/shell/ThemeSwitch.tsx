@@ -1,6 +1,6 @@
 "use client";
 
-import { Battery, Moon, Sun } from "lucide-react";
+import { Battery, BatteryCharging, Moon, Sun } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 
 export function ThemeSwitch({ compact = false }: { compact?: boolean }) {
@@ -36,8 +36,8 @@ export function LowPowerSwitch({ compact = false }: { compact?: boolean }) {
         compact ? "h-9 px-3" : "h-10 px-3"
       } ${isLowPowerMode ? "border-ping-accent/45 text-ping-accent" : ""}`}
     >
-      <Battery size={16} />
-      <span className="hidden font-mono text-[10px] uppercase sm:inline">{isLowPowerMode ? "eco" : "full"}</span>
+      {isLowPowerMode ? <Battery size={16} /> : <BatteryCharging size={16} />}
+      <span className="font-mono text-[10px] uppercase">{isLowPowerMode ? "eco" : "full"}</span>
     </button>
   );
 }
