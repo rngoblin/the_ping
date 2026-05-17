@@ -4,8 +4,8 @@ export const tomorrowTestEvent = {
   id: "ping-room-test-2026-05-17",
   title: "PING room test",
   description: "A small closed session to check radio, chat, presence, reactions, and feedback with friends inside one shared room.",
-  startsAt: "2026-05-17T12:15:00+05:00",
-  endsAt: "2026-05-17T14:15:00+05:00",
+  startsAt: "2026-05-17T16:00:00.000Z",
+  endsAt: "2026-05-17T18:00:00.000Z",
   roomId: "main-floor",
   roomLabel: "main floor",
   isPublished: true

@@ -5,7 +5,7 @@ export const currentLive = {
   status: "live" as LiveStatus,
   streamType: "youtube" as StreamType,
   streamUrl: "",
-  embedUrl: "https://www.youtube.com/embed/FzmkttWQNPE?autoplay=1&mute=1&playsinline=1",
+  embedUrl: "https://www.youtube.com/embed/FzmkttWQNPE?autoplay=1&mute=0&playsinline=1",
   // Examples for a test night:
   // streamType: "youtube", embedUrl: "https://www.youtube.com/embed/VIDEO_ID?autoplay=1"
   // streamType: "twitch", embedUrl: "https://player.twitch.tv/?channel=CHANNEL&parent=localhost"

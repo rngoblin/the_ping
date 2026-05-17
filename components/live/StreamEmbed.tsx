@@ -4,11 +4,11 @@ import Image from "next/image";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
 const VIDEO_ID = "FzmkttWQNPE";
-const START_HOUR = 12;
-const START_MINUTE = 15;
+const STREAM_START_AT_UTC = "2026-05-17T16:00:00.000Z";
 const CHECK_INTERVAL_MS = 15_000;
 const STREAM_COVER_SRC = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/images/ping-stream-cover.png`;
-export const STREAM_START_LABEL = "12:15";
+export const STREAM_START_LABEL = "21:00";
+const STREAM_START_TIME = new Date(STREAM_START_AT_UTC).getTime();
 
 type StreamYouTubePlayer = {
   destroy: () => void;
@@ -50,17 +50,11 @@ const loadYouTubeApi = () => {
 };
 
 export const isAfterStreamStartTime = () => {
-  const now = new Date();
-  const start = new Date();
-  start.setHours(START_HOUR, START_MINUTE, 0, 0);
-  return now >= start;
+  return Date.now() >= STREAM_START_TIME;
 };
 
 export const getMsUntilStreamStart = () => {
-  const now = new Date();
-  const start = new Date();
-  start.setHours(START_HOUR, START_MINUTE, 0, 0);
-  return Math.max(0, start.getTime() - now.getTime());
+  return Math.max(0, STREAM_START_TIME - Date.now());
 };
 
 function StreamBadge({ children }: { children: ReactNode }) {

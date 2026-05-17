@@ -9,9 +9,9 @@ export const liveTestConfig = {
   source: "warehouse room 2",
   streamType: "youtube" as StreamType,
   streamUrl: "",
-  embedUrl: "https://www.youtube.com/embed/FzmkttWQNPE?autoplay=1&mute=1&playsinline=1",
+  embedUrl: "https://www.youtube.com/embed/FzmkttWQNPE?autoplay=1&mute=0&playsinline=1",
   status: "live" as LiveStatus,
-  startsAt: "today / 12:15 local",
+  startsAt: "2026-05-17 / 16:00 UTC / 21:00 local",
   feedbackUrl: process.env.NEXT_PUBLIC_FEEDBACK_URL || "https://github.com/rngoblin/the_ping/issues/new",
   schedule
 };
