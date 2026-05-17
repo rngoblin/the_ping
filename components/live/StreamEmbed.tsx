@@ -8,7 +8,7 @@ const START_HOUR = 21;
 const START_MINUTE = 0;
 const CHECK_INTERVAL_MS = 15_000;
 const YOUTUBE_EMBED_SRC = `https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&mute=1&playsinline=1`;
-const STREAM_COVER_SRC = "/images/ping-stream-cover.png";
+const STREAM_COVER_SRC = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/images/ping-stream-cover.png`;
 
 const isAfterStartTime = () => {
   const now = new Date();

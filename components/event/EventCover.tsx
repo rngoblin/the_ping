@@ -16,7 +16,7 @@ type EventCoverProps = {
 };
 
 const normalizeCode = (eventCode: string) => eventCode.trim().toUpperCase() || "PING-000";
-const UPCOMING_COVER_SRC = "/images/ping-upcoming-event-cover.png";
+const UPCOMING_COVER_SRC = `${process.env.NEXT_PUBLIC_BASE_PATH ?? ""}/images/ping-upcoming-event-cover.png`;
 
 export function EventCover({ title, artist, startsAt, city, genre, eventCode, className = "" }: EventCoverProps) {
   const coverLabel = `${title} by ${artist}. ${genre} in ${city}, scheduled ${startsAt}. ${normalizeCode(eventCode)}.`;
