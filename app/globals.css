@@ -23,6 +23,7 @@
   --noise-a: rgba(8, 15, 12, 0.035);
   --noise-b: rgba(8, 15, 12, 0.025);
   --scroll-thumb: rgba(94, 122, 100, 0.28);
+  --ping-radius: 0.45rem;
   color-scheme: light;
 }
 
@@ -55,6 +56,14 @@
   --dark-muted-pink: #8a4f63;
   --dark-danger: #d96b6b;
   color-scheme: dark;
+}
+
+.ping-app :where(.rounded-md, .rounded-lg, .rounded-xl, .rounded-2xl, .rounded-t-2xl, .rounded-l-2xl) {
+  border-radius: var(--ping-radius);
+}
+
+.ping-app :where(button.rounded-full, input.rounded-full, .player-controls.rounded-full):not(.reaction-button) {
+  border-radius: var(--ping-radius);
 }
 
 :root[data-theme="night"] .border-ping-black\/10 {
@@ -118,7 +127,7 @@
 
 :root[data-theme="night"] .rounded-lg,
 :root[data-theme="night"] .rounded-xl {
-  border-radius: 0.45rem;
+  border-radius: var(--ping-radius);
 }
 
 :root[data-theme="night"] .text-ping-accent {
@@ -522,6 +531,18 @@ button {
 :root[data-theme="night"] .stream-reaction-dock {
   border-color: rgba(42, 54, 49, 0.92);
   background-color: rgba(9, 13, 11, 0.94);
+}
+
+:root[data-theme="night"] .stream-badge {
+  border-color: rgba(168, 255, 96, 0.34);
+  background-color: rgba(17, 23, 21, 0.92);
+  color: var(--dark-signal);
+}
+
+:root:not([data-theme="night"]) .stream-badge {
+  border-color: rgba(94, 122, 100, 0.28);
+  background-color: rgba(233, 233, 230, 0.92);
+  color: rgb(var(--color-accent));
 }
 
 :root[data-theme="night"] .live-player .text-ping-bg,

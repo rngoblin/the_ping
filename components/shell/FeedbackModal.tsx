@@ -92,12 +92,12 @@ export function FeedbackModal({ isOpen, onClose }: { isOpen: boolean; onClose: (
   );
 }
 
-export function FeedbackButton({ onClick }: { onClick: () => void }) {
+export function FeedbackButton({ onClick, className = "" }: { onClick: () => void; className?: string }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className="fixed bottom-[calc(5.25rem+env(safe-area-inset-bottom))] right-3 z-40 flex items-center gap-2 rounded-full border border-ping-pink/35 bg-ping-surface/92 px-3 py-2 font-mono text-[9px] uppercase tracking-[0.14em] text-ping-pink shadow-line backdrop-blur-md transition hover:border-ping-pink hover:bg-ping-softPink/15 sm:bottom-4 sm:right-4"
+      className={`feedback-button flex w-full items-center justify-center gap-2 rounded-md border border-ping-pink/35 bg-ping-surface/92 px-3 py-2.5 font-mono text-[9px] uppercase tracking-[0.14em] text-ping-pink shadow-line transition hover:border-ping-pink hover:bg-ping-softPink/15 ${className}`}
     >
       <MessageSquare size={13} />
       leave feedback

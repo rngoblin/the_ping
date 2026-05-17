@@ -5,12 +5,18 @@ import { Activity } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 
 const roomPositions: Record<string, { x: number; y: number }> = {
-  "main-floor": { x: 50, y: 46 },
-  "smoking-area": { x: 22, y: 66 },
-  shitposting: { x: 72, y: 68 },
-  "visuals-art": { x: 31, y: 28 },
-  "producers-lair": { x: 68, y: 27 },
-  ambient: { x: 48, y: 76 }
+  "main-floor": { x: 50, y: 48 },
+  "smoking-area": { x: 33, y: 61 },
+  shitposting: { x: 66, y: 62 },
+  "visuals-art": { x: 36, y: 35 },
+  "producers-lair": { x: 64, y: 36 },
+  ambient: { x: 50, y: 70 }
+};
+
+const heatColor = (heat: number) => {
+  const lightness = 38 + heat * 25;
+  const saturation = 58 + heat * 36;
+  return `hsl(346deg ${saturation}% ${lightness}%)`;
 };
 
 export function RoomsHeatmap() {
@@ -23,13 +29,15 @@ export function RoomsHeatmap() {
   const maxReactions = Math.max(1, ...rooms.map((room) => reactionCountsByRoom[room.id] ?? 0));
 
   return (
-    <section className="rooms-heatmap-panel rounded-lg border border-ping-black/10 bg-ping-surface/80 p-4 shadow-line transition-colors">
+    <section className="rooms-heatmap-panel rounded-md border border-ping-black/10 bg-ping-surface/80 p-4 shadow-line transition-colors">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/50">rooms heatmap</h2>
         <Activity size={15} className="text-ping-accent" />
       </div>
       <div className="relative h-52 overflow-hidden rounded-md border border-ping-black/10 bg-ping-bg/55">
-        <div className="absolute inset-0 opacity-40 [background-image:linear-gradient(rgba(94,122,100,0.16)_1px,transparent_1px),linear-gradient(90deg,rgba(94,122,100,0.13)_1px,transparent_1px)] [background-size:32px_32px]" />
+        <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(rgba(94,122,100,0.18)_1px,transparent_1px),linear-gradient(90deg,rgba(94,122,100,0.14)_1px,transparent_1px)] [background-size:24px_24px]" />
+        <div className="pointer-events-none absolute inset-0 opacity-55 [background-image:radial-gradient(circle_at_36%_36%,rgba(255,90,124,0.32),transparent_5.5rem),radial-gradient(circle_at_64%_38%,rgba(255,107,138,0.28),transparent_5rem),radial-gradient(circle_at_50%_62%,rgba(168,255,96,0.13),transparent_6.5rem),radial-gradient(circle_at_34%_62%,rgba(217,107,132,0.24),transparent_4.5rem),radial-gradient(circle_at_66%_64%,rgba(255,90,124,0.30),transparent_4.75rem)]" />
+        <div className="pointer-events-none absolute inset-0 opacity-45 [background-image:radial-gradient(rgba(255,90,124,0.38)_0.7px,transparent_0.8px),radial-gradient(rgba(168,255,96,0.18)_0.6px,transparent_0.7px)] [background-position:0_0,6px_7px] [background-size:11px_11px,13px_13px]" />
         {rooms.map((room) => {
           const presence = presenceByRoom[room.id]?.count ?? 0;
           const reactions = reactionCountsByRoom[room.id] ?? 0;
@@ -37,6 +45,7 @@ export function RoomsHeatmap() {
           const size = 0.9 + heat * 2.4;
           const isActive = room.id === activeRoomId;
           const position = roomPositions[room.id] ?? { x: 50, y: 50 };
+          const color = heatColor(heat);
 
           return (
             <button
@@ -52,10 +61,10 @@ export function RoomsHeatmap() {
                   top: `${position.y}%`,
                   width: `${size}rem`,
                   height: `${size}rem`,
-                  borderColor: isActive ? "rgb(var(--color-accent))" : "rgba(94, 122, 100, 0.28)",
-                  backgroundColor: room.accent,
-                  opacity: 0.34 + heat * 0.58,
-                  boxShadow: `0 0 ${Math.round(16 + heat * 42)}px ${room.accent}`
+                  borderColor: isActive ? "rgb(var(--color-accent))" : "rgba(255, 90, 124, 0.34)",
+                  backgroundColor: color,
+                  opacity: 0.48 + heat * 0.48,
+                  boxShadow: `0 0 ${Math.round(20 + heat * 54)}px ${color}`
                 } as CSSProperties
               }
             >

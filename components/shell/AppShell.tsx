@@ -310,6 +310,11 @@ export function AppShell() {
               <div id="rooms-section" className="scroll-mt-6">
                 <ChatPanel />
               </div>
+              {activeEvent?.feedbackUrl ? (
+                <div className="pb-2 xl:hidden">
+                  <FeedbackButton onClick={() => setIsFeedbackOpen(true)} />
+                </div>
+              ) : null}
             </div>
 
             <aside className="hidden content-start gap-4 xl:grid xl:grid-cols-1">
@@ -321,6 +326,9 @@ export function AppShell() {
               </section>
               <PeopleHere presence={activePresence} />
               <RoomList compact />
+              {activeEvent?.feedbackUrl ? (
+                <FeedbackButton onClick={() => setIsFeedbackOpen(true)} />
+              ) : null}
             </aside>
           </div>
         </div>
@@ -339,9 +347,6 @@ export function AppShell() {
         </div>
       </BottomSheet>
       <ScheduleDrawer isOpen={isScheduleOpen} onClose={() => setIsScheduleOpen(false)} />
-      {activeEvent?.feedbackUrl ? (
-        <FeedbackButton onClick={() => setIsFeedbackOpen(true)} />
-      ) : null}
       <FeedbackModal isOpen={isFeedbackOpen} onClose={() => setIsFeedbackOpen(false)} />
     </main>
   );
