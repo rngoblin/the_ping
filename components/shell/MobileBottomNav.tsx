@@ -7,7 +7,7 @@ const items: { id: MobilePanel | "live"; label: string; icon: typeof Radio }[] =
   { id: "live", label: "Live", icon: Radio },
   { id: "rooms", label: "Rooms", icon: Waves },
   { id: "schedule", label: "Schedule", icon: CalendarDays },
-  { id: "vibe", label: "Vibe", icon: Users }
+  { id: "vibe", label: "Heat", icon: Users }
 ];
 
 export function MobileBottomNav() {

@@ -473,6 +473,14 @@ button {
   background: linear-gradient(145deg, var(--active-room-tint, rgba(94, 122, 100, 0.18)), rgba(233, 233, 230, 0.82) 44%);
 }
 
+.theme-cover-art {
+  transform: translateZ(0);
+}
+
+:root:not([data-theme="night"]) .theme-cover-art {
+  filter: invert(1) hue-rotate(180deg) saturate(0.82) brightness(1.06) contrast(0.94);
+}
+
 .chat-panel {
   background: linear-gradient(160deg, var(--active-room-tint, rgba(94, 122, 100, 0.18)), rgba(233, 233, 230, 0.88) 40%);
 }
@@ -480,6 +488,12 @@ button {
 :root[data-theme="night"] .room-vibe-panel {
   background:
     radial-gradient(circle at 82% 24%, rgba(168, 255, 96, 0.052), transparent 5.5rem),
+    linear-gradient(145deg, rgba(17, 23, 21, 0.96), rgba(9, 13, 11, 0.96) 62%);
+}
+
+:root[data-theme="night"] .rooms-heatmap-panel {
+  background:
+    radial-gradient(circle at 72% 30%, rgba(168, 255, 96, 0.055), transparent 8rem),
     linear-gradient(145deg, rgba(17, 23, 21, 0.96), rgba(9, 13, 11, 0.96) 62%);
 }
 

@@ -8,19 +8,21 @@ const RoomCard = memo(function RoomCard({
   room,
   isActive,
   presenceCount,
-  onSelect
+  onSelect,
+  compact
 }: {
   room: Room;
   isActive: boolean;
   presenceCount: number;
   onSelect: (roomId: string) => void;
+  compact?: boolean;
 }) {
   const handleClick = useCallback(() => onSelect(room.id), [onSelect, room.id]);
 
   return (
     <button
       onClick={handleClick}
-      className={`h-[6.35rem] min-h-0 rounded-md border px-3 py-3 text-left transition lg:h-full ${
+      className={`${compact ? "min-h-[4.75rem]" : "h-[6.35rem] lg:h-full"} min-h-0 rounded-md border px-3 py-3 text-left transition ${
         isActive ? "border-ping-accent/45 bg-ping-sage/70" : "border-transparent bg-ping-bg/45 hover:border-ping-black/10 hover:bg-ping-bg"
       }`}
     >
@@ -37,24 +39,24 @@ const RoomCard = memo(function RoomCard({
   );
 });
 
-export function RoomList() {
+export function RoomList({ compact = false }: { compact?: boolean }) {
   const rooms = usePingStore((state) => state.rooms);
   const activeRoomId = usePingStore((state) => state.activeRoomId);
   const presenceByRoom = usePingStore((state) => state.presenceByRoom);
   const setActiveRoom = usePingStore((state) => state.setActiveRoom);
 
   return (
-    <section className="flex flex-col rounded-lg border border-ping-black/10 bg-ping-surface/80 p-3 shadow-line lg:h-[44.75rem]">
+    <section className={`flex flex-col rounded-lg border border-ping-black/10 bg-ping-surface/80 p-3 shadow-line ${compact ? "" : "lg:h-[44.75rem]"}`}>
       <div className="mb-3 flex shrink-0 items-center justify-between">
         <h2 className="font-mono text-[10px] uppercase tracking-[0.18em] text-ping-ink/50">rooms</h2>
         <span className="font-mono text-[10px] uppercase text-ping-accent">{rooms.length} open</span>
       </div>
-      <div className="grid gap-2 lg:min-h-0 lg:flex-1 lg:grid-rows-6">
+      <div className={`grid gap-2 ${compact ? "" : "lg:min-h-0 lg:flex-1 lg:grid-rows-6"}`}>
         {rooms.map((room) => {
           const isActive = activeRoomId === room.id;
           const presenceCount = presenceByRoom[room.id]?.count ?? 0;
 
-          return <RoomCard key={room.id} room={room} isActive={isActive} presenceCount={presenceCount} onSelect={setActiveRoom} />;
+          return <RoomCard key={room.id} room={room} isActive={isActive} presenceCount={presenceCount} onSelect={setActiveRoom} compact={compact} />;
         })}
       </div>
     </section>

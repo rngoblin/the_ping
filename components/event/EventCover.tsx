@@ -26,7 +26,7 @@ export function EventCover({ title, artist, startsAt, city, genre, eventCode, cl
       className={`event-cover group relative isolate aspect-[var(--cover-ratio,16/9)] overflow-hidden rounded-md border border-ping-black/10 bg-ping-black text-left shadow-line ${className}`}
       aria-label={coverLabel}
     >
-      <Image src={UPCOMING_COVER_SRC} alt="" fill sizes="(min-width: 1280px) 22rem, (min-width: 640px) 14rem, 100vw" className="object-cover transition duration-500 group-hover:scale-[1.015]" />
+      <Image src={UPCOMING_COVER_SRC} alt="" fill sizes="(min-width: 1280px) 22rem, (min-width: 640px) 14rem, 100vw" className="theme-cover-art object-cover transition duration-500 group-hover:scale-[1.015]" />
     </figure>
   );
 }

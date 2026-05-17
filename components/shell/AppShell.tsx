@@ -12,7 +12,7 @@ import { LivePlayer } from "@/components/live/LivePlayer";
 import { RoomList } from "@/components/rooms/RoomList";
 import { PeopleHere } from "@/components/rooms/PeopleHere";
 import { RoomSwitcher } from "@/components/rooms/RoomSwitcher";
-import { RoomVibe } from "@/components/rooms/RoomVibe";
+import { RoomsHeatmap } from "@/components/rooms/RoomsHeatmap";
 import { BottomSheet } from "@/components/shell/BottomSheet";
 import { MobileBottomNav } from "@/components/shell/MobileBottomNav";
 import { SchedulePanel } from "@/components/schedule/SchedulePanel";
@@ -307,20 +307,18 @@ export function AppShell() {
               </section>
               <RoomSwitcher />
 
-              <div id="rooms-section" className="grid scroll-mt-6 gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
-                <div className="hidden lg:block">
-                  <RoomList />
-                </div>
+              <div id="rooms-section" className="scroll-mt-6">
                 <ChatPanel />
               </div>
             </div>
 
             <aside className="hidden content-start gap-4 xl:grid xl:grid-cols-1">
+              <RoomList compact />
               <section id="schedule-section" className="scroll-mt-6">
                 <SchedulePanel onOpenFullSchedule={openFullSchedule} />
               </section>
-              <section id="vibe-section" className="scroll-mt-6">
-                <RoomVibe />
+              <section id="heatmap-section" className="scroll-mt-6">
+                <RoomsHeatmap />
               </section>
               <PeopleHere presence={activePresence} />
             </aside>
@@ -334,8 +332,8 @@ export function AppShell() {
       <BottomSheet isOpen={mobilePanel === "schedule"} title="schedule" onClose={() => setMobilePanel("none")}>
         <SchedulePanel onOpenFullSchedule={openFullSchedule} />
       </BottomSheet>
-      <BottomSheet isOpen={mobilePanel === "vibe"} title="room vibe" onClose={() => setMobilePanel("none")}>
-        <RoomVibe />
+      <BottomSheet isOpen={mobilePanel === "vibe"} title="rooms heatmap" onClose={() => setMobilePanel("none")}>
+        <RoomsHeatmap />
         <div className="mt-4">
           <PeopleHere presence={activePresence} />
         </div>
