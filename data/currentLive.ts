@@ -3,9 +3,9 @@ export type StreamType = "youtube" | "twitch" | "hls" | "placeholder";
 
 export const currentLive = {
   status: "live" as LiveStatus,
-  streamType: "placeholder" as StreamType,
+  streamType: "youtube" as StreamType,
   streamUrl: "",
-  embedUrl: "",
+  embedUrl: "https://www.youtube.com/embed/FzmkttWQNPE?autoplay=1&mute=1&playsinline=1",
   // Examples for a test night:
   // streamType: "youtube", embedUrl: "https://www.youtube.com/embed/VIDEO_ID?autoplay=1"
   // streamType: "twitch", embedUrl: "https://player.twitch.tv/?channel=CHANNEL&parent=localhost"

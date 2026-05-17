@@ -1,125 +1,66 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { usePingStore } from "@/store/usePingStore";
-import { normalizeStreamEmbedUrl } from "@/utils/streamSources";
+import Image from "next/image";
+import { useEffect, useState } from "react";
 
-function StreamFallback({ copy = "stream signal unavailable" }: { copy?: string }) {
+const VIDEO_ID = "FzmkttWQNPE";
+const START_HOUR = 21;
+const START_MINUTE = 0;
+const CHECK_INTERVAL_MS = 15_000;
+const YOUTUBE_EMBED_SRC = `https://www.youtube.com/embed/${VIDEO_ID}?autoplay=1&mute=1&playsinline=1`;
+const STREAM_COVER_SRC = "/images/ping-stream-cover.png";
+
+const isAfterStartTime = () => {
+  const now = new Date();
+  const start = new Date();
+  start.setHours(START_HOUR, START_MINUTE, 0, 0);
+  return now >= start;
+};
+
+function StreamBadge({ children }: { children: string }) {
   return (
-    <div className="pointer-events-none absolute inset-0 z-[1] grid place-items-center bg-ping-black text-ping-bg">
-      <div className="max-w-sm px-6 text-center">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-ping-accent">signal quiet</p>
-        <p className="mt-3 text-sm leading-relaxed text-ping-bg/65">{copy}</p>
-      </div>
+    <div className="absolute left-3 top-3 z-[13] rounded-full border border-ping-accent/35 bg-ping-black/75 px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em] text-ping-accent backdrop-blur-md">
+      {children}
     </div>
   );
 }
 
 export function StreamEmbed() {
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const videoRef = useRef<HTMLVideoElement | null>(null);
-  const [hasStreamError, setHasStreamError] = useState(false);
-  const currentLive = usePingStore((state) => state.currentLive);
-  const isPlaying = usePingStore((state) => state.isPlaying);
-  const isMuted = usePingStore((state) => state.isMuted);
-  const volume = usePingStore((state) => state.volume);
-  const embedUrl = useMemo(
-    () =>
-      normalizeStreamEmbedUrl({
-        streamType: currentLive.streamType,
-        embedUrl: currentLive.embedUrl,
-        streamUrl: currentLive.streamUrl,
-        origin: typeof window !== "undefined" ? window.location.origin : undefined
-      }),
-    [currentLive.embedUrl, currentLive.streamType, currentLive.streamUrl]
-  );
-  const hasEmbed = embedUrl && currentLive.streamType !== "placeholder";
-  const hasHls = currentLive.streamType === "hls" && currentLive.streamUrl;
+  const [isAvailable, setIsAvailable] = useState(false);
 
   useEffect(() => {
-    setHasStreamError(false);
-  }, [currentLive.status, currentLive.streamType, currentLive.streamUrl, embedUrl]);
+    const checkAvailability = () => setIsAvailable(isAfterStartTime());
+    checkAvailability();
 
-  useEffect(() => {
-    if (currentLive.status !== "live") {
-      return;
-    }
+    const interval = window.setInterval(checkAvailability, CHECK_INTERVAL_MS);
+    return () => window.clearInterval(interval);
+  }, []);
 
-    if (currentLive.streamType === "youtube") {
-      const sendCommand = (func: string, args: unknown[] = []) => {
-        iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ event: "command", func, args }), "*");
-      };
-
-      sendCommand(isPlaying ? "playVideo" : "pauseVideo");
-      sendCommand(isMuted ? "mute" : "unMute");
-      sendCommand("setVolume", [isMuted ? 0 : volume]);
-      return;
-    }
-
-    if (currentLive.streamType === "hls" && videoRef.current) {
-      videoRef.current.muted = isMuted;
-      videoRef.current.volume = Math.max(0, Math.min(1, volume / 100));
-
-      if (isPlaying) {
-        void videoRef.current.play().catch(() => undefined);
-      } else {
-        videoRef.current.pause();
-      }
-    }
-  }, [currentLive.status, currentLive.streamType, isMuted, isPlaying, volume]);
-
-  if (currentLive.status !== "live") {
-    return null;
-  }
-
-  if (!isPlaying && (currentLive.streamType === "youtube" || currentLive.streamType === "twitch" || currentLive.streamType === "hls")) {
-    return null;
-  }
-
-  if (hasStreamError) {
-    return <StreamFallback />;
-  }
-
-  if (currentLive.streamType !== "placeholder" && !hasEmbed && !hasHls) {
-    return <StreamFallback copy="host has not set a playable stream url yet" />;
-  }
-
-  if (hasEmbed && (currentLive.streamType === "youtube" || currentLive.streamType === "twitch")) {
+  if (!isAvailable) {
     return (
+      <div className="absolute inset-0 z-[12] overflow-hidden border border-ping-accent/25 bg-ping-black text-ping-bg">
+        <Image src={STREAM_COVER_SRC} alt="" fill sizes="100vw" priority className="object-cover" />
+        <StreamBadge>scheduled 21:00</StreamBadge>
+        <div className="sr-only">
+          <p className="font-mono text-sm uppercase tracking-[0.16em] text-ping-accent sm:text-base">stream starts at 21:00</p>
+          <p className="mt-2 text-sm leading-relaxed text-ping-bg/60">Waiting for signal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <StreamBadge>on air</StreamBadge>
       <iframe
-        ref={iframeRef}
-        key={`${currentLive.streamType}:${embedUrl}`}
-        src={embedUrl}
-        title={`${currentLive.title} stream`}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
-        allowFullScreen
-        onError={() => setHasStreamError(true)}
-        onLoad={() => {
-          iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ event: "command", func: isMuted ? "mute" : "unMute", args: [] }), "*");
-          iframeRef.current?.contentWindow?.postMessage(JSON.stringify({ event: "command", func: isPlaying ? "playVideo" : "pauseVideo", args: [] }), "*");
-        }}
+        src={YOUTUBE_EMBED_SRC}
+        title="YouTube video player"
+        frameBorder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
         referrerPolicy="strict-origin-when-cross-origin"
-        className="absolute inset-0 z-[1] h-full w-full border-0 opacity-100"
+        allowFullScreen
+        className="absolute inset-0 z-[1] h-full w-full border-0"
       />
-    );
-  }
-
-  if (hasHls) {
-    return (
-      <video
-        ref={videoRef}
-        key={currentLive.streamUrl}
-        src={currentLive.streamUrl}
-        className="absolute inset-0 z-[1] h-full w-full object-cover opacity-100"
-        onError={() => setHasStreamError(true)}
-        autoPlay
-        muted={isMuted}
-        loop
-        playsInline
-        controls
-      />
-    );
-  }
-
-  return null;
+    </>
+  );
 }

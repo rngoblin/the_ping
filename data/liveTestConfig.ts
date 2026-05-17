@@ -7,11 +7,11 @@ export const liveTestConfig = {
   artist: "Mira Lumen b2b Coastline",
   city: "Tbilisi",
   source: "warehouse room 2",
-  streamType: "placeholder" as StreamType,
+  streamType: "youtube" as StreamType,
   streamUrl: "",
-  embedUrl: "",
-  status: "notLive" as LiveStatus,
-  startsAt: "tonight / 03:17 local",
+  embedUrl: "https://www.youtube.com/embed/FzmkttWQNPE?autoplay=1&mute=1&playsinline=1",
+  status: "live" as LiveStatus,
+  startsAt: "tonight / 21:00 local",
   feedbackUrl: process.env.NEXT_PUBLIC_FEEDBACK_URL || "https://github.com/rngoblin/the_ping/issues/new",
   schedule
 };

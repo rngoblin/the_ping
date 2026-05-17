@@ -4,22 +4,8 @@ import { CalendarDays } from "lucide-react";
 import { usePingStore } from "@/store/usePingStore";
 import { EventCover } from "@/components/event/EventCover";
 
-const getCoverAccent = (genre: string) => {
-  if (/hardgroove|breakbeat|jungle/i.test(genre)) {
-    return "pink" as const;
-  }
-
-  if (/visual|experimental/i.test(genre)) {
-    return "mixed" as const;
-  }
-
-  return "green" as const;
-};
-
 export function SchedulePanel({ onOpenFullSchedule }: { onOpenFullSchedule: () => void }) {
   const schedule = usePingStore((state) => state.schedule);
-  const themeMode = usePingStore((state) => state.themeMode);
-  const coverTheme = themeMode === "night" ? "void" : "daylight";
   const previewSchedule = schedule.slice(0, 3);
 
   return (
@@ -41,9 +27,9 @@ export function SchedulePanel({ onOpenFullSchedule }: { onOpenFullSchedule: () =
               city={act.city}
               genre={act.genre}
               eventCode={act.id}
-              theme={coverTheme}
-              accent={getCoverAccent(act.genre)}
-              className="min-h-[11.25rem] border-ping-black/10 p-2 [--cover-ratio:16/10.5] [--cover-title-size:clamp(1.25rem,7.4cqw,1.85rem)] [--cover-title-width:15ch] sm:p-2"
+              theme="void"
+              accent="green"
+              className="[--cover-ratio:16/9]"
             />
           </button>
         ))}

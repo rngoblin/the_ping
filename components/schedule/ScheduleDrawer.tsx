@@ -8,24 +8,10 @@ import { NotifyModal } from "@/components/schedule/NotifyModal";
 import { EventCover } from "@/components/event/EventCover";
 import type { ScheduleAct } from "@/data/schedule";
 
-const getCoverAccent = (genre: string) => {
-  if (/hardgroove|breakbeat|jungle/i.test(genre)) {
-    return "pink" as const;
-  }
-
-  if (/visual|experimental/i.test(genre)) {
-    return "mixed" as const;
-  }
-
-  return "green" as const;
-};
-
 export function ScheduleDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) {
   const [notifyAct, setNotifyAct] = useState<ScheduleAct | null>(null);
   const schedule = usePingStore((state) => state.schedule);
   const featureFlags = usePingStore((state) => state.featureFlags);
-  const themeMode = usePingStore((state) => state.themeMode);
-  const coverTheme = themeMode === "night" ? "void" : "daylight";
   const groupedSchedule = schedule.reduce<Record<string, typeof schedule>>((groups, act) => {
     groups[act.day] = [...(groups[act.day] ?? []), act];
     return groups;
@@ -86,9 +72,9 @@ export function ScheduleDrawer({ isOpen, onClose }: { isOpen: boolean; onClose: 
                             city={act.city}
                             genre={act.genre}
                             eventCode={act.id}
-                            theme={coverTheme}
-                            accent={getCoverAccent(act.genre)}
-                            className="min-h-[14rem] [--cover-ratio:4/5] [--cover-title-size:clamp(1.55rem,13cqw,3rem)] [--cover-title-width:13ch] sm:min-h-[15rem]"
+                            theme="void"
+                            accent="green"
+                            className="self-start [--cover-ratio:16/9]"
                           />
                           <div className="flex min-w-0 flex-col justify-between gap-4 p-1">
                             <div>
